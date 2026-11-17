@@ -59,7 +59,7 @@ export default function PaginaPrivacidad() {
       <p>No vendemos tus datos. Solo los compartimos con los servicios que necesitamos para que la app funcione:</p>
       <ul>
         <li>Vercel (alojamiento de la app web, Estados Unidos).</li>
-        <li>Supabase (base de datos y archivos, servidores en Brasil).</li>
+        <li>Supabase (base de datos y archivos, servidores en Canadá).</li>
         <li>Anthropic (inteligencia artificial que lee las fotos de boletas y comprobantes, Estados Unidos).</li>
         <li>Un proveedor de correo para enviarte avisos (Estados Unidos).</li>
       </ul>

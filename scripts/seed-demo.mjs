@@ -7,9 +7,15 @@
 // Todo es inventado: ningún RUT, nombre ni teléfono es real (ver CLAUDE.md, sección 8b).
 // Fase 1: negocio, dueño, vendedores y categorías.
 // Fase 2: 40 productos y un mes de movimientos de stock (ventas diarias, una merma y un vencido).
-// Las próximas fases suman compras con boletas, ventas de la caja y pagos.
+// Fase 3: 3 proveedores, 6 boletas confirmadas (una con alza de costo de más de 5%) y 1 boleta por confirmar con su foto.
+// Las próximas fases suman ventas de la caja y pagos.
 
+import { readFile } from "node:fs/promises";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { createClient } from "@supabase/supabase-js";
+
+const raiz = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
 // Mismos valores que src/lib/cuentas.ts
 const VERSION_LEGAL = "2026-11-borrador";
@@ -57,6 +63,12 @@ async function borrarDemoAnterior() {
   const { data: lista } = await admin.auth.admin.listUsers({ perPage: 1000 });
   const huerfana = lista?.users.find((u) => u.email === correoInterno(DEMO.dueno.rut));
   if (huerfana) await ok(admin.auth.admin.deleteUser(huerfana.id), "borrar cuenta huérfana");
+
+  // Fotos de boletas del demo anterior.
+  for (const empresa of empresas) {
+    const { data: fotos } = await admin.storage.from("boletas").list(empresa.id);
+    if (fotos?.length) await admin.storage.from("boletas").remove(fotos.map((f) => `${empresa.id}/${f.name}`));
+  }
 
   if (empresas.length) await ok(admin.from("empresas").delete().in("id", empresas.map((e) => e.id)), "borrar negocio anterior");
 }
@@ -137,6 +149,155 @@ function fechaHace(dias, azar) {
   return fecha.toISOString();
 }
 
+
+// -----------------------------------------------------------------------------
+// Fase 3: compras del último mes (proveedores ficticios)
+// [días atrás, proveedor, tipo, número, [[producto, descripción en la boleta, cantidad, costo unitario], …]]
+// -----------------------------------------------------------------------------
+const PROVEEDORES = {
+  "Mayorista del Sur": "77123456-9",
+  "Distribuidora Andes": "76987654-3",
+  "Panadería La Espiga": null,
+};
+
+const COMPRAS = [
+  [28, "Mayorista del Sur", "factura", "101123", [
+    ["Arroz grado 1 1 kg", "ARROZ G1 1KG", 10, 1150],
+    ["Fideos espagueti 400 g", "FIDEO ESPAG 400G", 12, 760],
+    ["Aceite vegetal 1 L", "ACEITE VEG 1LT", 6, 2350],
+    ["Azúcar 1 kg", "AZUCAR 1KG", 10, 1020],
+    ["Galletas de chocolate 120 g", "GALLETA CHOC 120GR", 24, 480],
+  ]],
+  [24, "Distribuidora Andes", "boleta", "55120", [
+    ["Bebida cola 1,5 L", "BEB COLA 1.5L", 12, 1450],
+    ["Agua mineral sin gas 1,6 L", "AGUA MIN S/GAS 1.6L", 12, 650],
+    ["Jugo en polvo sabor naranja", "JUGO POLVO NARANJA", 20, 230],
+    ["Néctar de durazno 1 L", "NECTAR DURAZNO 1L", 6, 900],
+  ]],
+  [20, "Panadería La Espiga", "boleta", "3301", [
+    ["Pan marraqueta (kg)", "MARRAQUETA KG", 20, 1300],
+    ["Pan hallulla (kg)", "HALLULLA KG", 15, 1300],
+    ["Pan de molde integral", "MOLDE INTEGRAL", 4, 1700],
+  ]],
+  [13, "Mayorista del Sur", "factura", "101377", [
+    ["Leche entera 1 L", "LECHE ENT 1LT", 24, 880],
+    ["Yogur sabor frutilla 1 L", "YOGUR FRUTILLA 1LT", 6, 1450],
+    ["Mantequilla 250 g", "MANTEQUILLA 250G", 6, 1850],
+    ["Té en bolsitas caja 100", "TE BOLSITAS X100", 4, 1890],
+  ]],
+  [7, "Distribuidora Andes", "boleta", "55488", [
+    ["Bebida cola 1,5 L", "BEB COLA 1.5L", 12, 1450],
+    ["Bebida sabor naranja 1,5 L", "BEB NARANJA 1.5L", 12, 1380],
+    ["Papas fritas 150 g", "PAPAS FRITAS 150G", 12, 990],
+    ["Chocolate de leche 100 g", "CHOCOLATE LECHE 100G", 10, 800],
+  ]],
+  // Alza de costo: las galletas pasan de $480 a $520 (+8,3%).
+  [3, "Mayorista del Sur", "factura", "101502", [
+    ["Galletas de chocolate 120 g", "GALLETA CHOC 120GR", 24, 520],
+    ["Arroz grado 1 1 kg", "ARROZ G1 1KG", 10, 1150],
+    ["Detergente líquido 3 L", "DETERGENTE LIQ 3LT", 3, 5900],
+  ]],
+];
+
+/** Boleta por confirmar (la misma lectura de src/lib/lector-boletas/ejemplo.ts, ya validada). */
+const BOLETA_POR_CONFIRMAR = {
+  tipo: "boleta",
+  proveedorNombre: "Mayorista del Sur",
+  proveedorRut: "77123456-9",
+  numero: "004521",
+  fecha: null,
+  items: [
+    { descripcion: "ARROZ G1 1KG", cantidad: 10, precioUnitario: 1150, total: 11500 },
+    { descripcion: "ACEITE VEG 1LT", cantidad: 6, precioUnitario: 2350, total: 14100 },
+    { descripcion: "AZUCAR 1KG", cantidad: 12, precioUnitario: 1020, total: 12240 },
+    { descripcion: "GALLETA CHOC 120GR", cantidad: 24, precioUnitario: 520, total: 12480 },
+    { descripcion: "TE BOLSITAS X100", cantidad: 4, precioUnitario: 1890, total: 7560 },
+    { descripcion: "MANI SALADO 200GR", cantidad: 10, precioUnitario: 890, total: 8900 },
+  ],
+  neto: 56118,
+  iva: 10662,
+  total: 66780,
+};
+
+const normalizar = (texto) => texto.trim().replace(/\s+/g, " ").toLowerCase();
+const fechaChile = (fechaIso) => new Date(fechaIso).toLocaleDateString("en-CA", { timeZone: "America/Santiago" });
+
+/** Crea proveedores, boletas confirmadas (con ítems y lo aprendido) y devuelve las entradas de stock. */
+async function crearCompras(empresaId, idProducto, azar) {
+  const proveedores = await ok(
+    admin.from("proveedores").insert(Object.entries(PROVEEDORES).map(([nombre, rut]) => ({ empresa_id: empresaId, nombre, rut }))).select("id, nombre"),
+    "crear proveedores",
+  );
+  const idProveedor = Object.fromEntries(proveedores.map((p) => [p.nombre, p.id]));
+  const entradas = [];
+  const alias = new Map();
+
+  for (const [dias, proveedor, tipo, numero, lineas] of COMPRAS) {
+    const fecha = fechaHace(dias, azar);
+    const total = lineas.reduce((t, [, , cantidad, costo]) => t + Math.round(cantidad * costo), 0);
+    const neto = Math.round(total / 1.19);
+    const [documento] = await ok(
+      admin
+        .from("documentos_compra")
+        .insert({
+          empresa_id: empresaId,
+          proveedor_id: idProveedor[proveedor],
+          tipo,
+          numero,
+          fecha: fechaChile(fecha),
+          neto,
+          iva: total - neto,
+          total,
+          estado: "confirmado",
+          confirmado_en: fecha,
+          created_at: fecha,
+        })
+        .select("id"),
+      "crear boleta",
+    );
+    await ok(
+      admin.from("items_documento").insert(
+        lineas.map(([producto, descripcion, cantidad, costo]) => ({
+          documento_id: documento.id,
+          empresa_id: empresaId,
+          descripcion_original: descripcion,
+          cantidad,
+          precio_unitario: costo,
+          total: Math.round(cantidad * costo),
+          producto_id: idProducto[producto],
+        })),
+      ),
+      "guardar productos de la boleta",
+    );
+    for (const [producto, descripcion, cantidad, costo] of lineas) {
+      entradas.push({ productoId: idProducto[producto], cantidad, costo, fecha, documentoId: documento.id });
+      alias.set(`${idProveedor[proveedor]}|${normalizar(descripcion)}`, {
+        empresa_id: empresaId,
+        proveedor_id: idProveedor[proveedor],
+        descripcion_original: normalizar(descripcion),
+        producto_id: idProducto[producto],
+      });
+    }
+  }
+  await ok(admin.from("alias_productos").insert([...alias.values()]), "guardar lo aprendido");
+
+  // Boleta por confirmar, con su foto de ejemplo.
+  const ruta = `${empresaId}/boleta-ejemplo.png`;
+  const imagen = await readFile(path.join(raiz, "scripts/demo/boleta-ejemplo.png"));
+  await ok(admin.storage.from("boletas").upload(ruta, imagen, { contentType: "image/png", upsert: true }), "subir foto de ejemplo");
+  await ok(
+    admin.from("documentos_compra").insert({
+      empresa_id: empresaId,
+      imagen_url: ruta,
+      estado: "por_confirmar",
+      datos_extraidos: { ...BOLETA_POR_CONFIRMAR, fecha: fechaChile(new Date().toISOString()) },
+    }),
+    "crear boleta por confirmar",
+  );
+
+  return entradas;
+}
+
 async function crearProductos(empresaId) {
   const categorias = await ok(admin.from("categorias").select("id, nombre").eq("empresa_id", empresaId), "leer categorías");
   const idCategoria = Object.fromEntries(categorias.map((c) => [c.nombre, c.id]));
@@ -153,6 +314,7 @@ async function crearProductos(empresaId) {
   }));
   const creados = await ok(admin.from("productos").insert(filas).select("id, nombre"), "crear productos");
   const idProducto = Object.fromEntries(creados.map((p) => [p.nombre, p.id]));
+  const compras = await crearCompras(empresaId, idProducto, azar);
 
   const movimientos = [];
   for (const [, nombre, unidad, , , costo, stockFinal, minimo, perfil] of PRODUCTOS) {
@@ -176,16 +338,29 @@ async function crearProductos(empresaId) {
     if (nombre === "Yogur sabor frutilla 1 L") salidas.push({ cantidad: 2, motivo: "vencido", fecha: fechaHace(6, azar) });
 
     const vendido = ventas.reduce((t, v) => t + v.cantidad, 0) + salidas.reduce((t, s) => t + s.cantidad, 0);
+    const entradas = compras.filter((c) => c.productoId === productoId);
+    const comprado = entradas.reduce((t, c) => t + c.cantidad, 0);
     movimientos.push({
       empresa_id: empresaId,
       producto_id: productoId,
       tipo: "ajuste",
       motivo: "stock_inicial",
-      cantidad: Math.round((stockFinal + vendido) * 1000) / 1000,
+      cantidad: Math.round((stockFinal + vendido - comprado) * 1000) / 1000,
       costo_unitario: costo,
       fecha: fechaHace(perfil === "dormido" ? 45 : 35, azar),
     });
     for (const v of ventas) movimientos.push({ empresa_id: empresaId, producto_id: productoId, tipo: "venta", cantidad: -v.cantidad, fecha: v.fecha });
+    for (const c of entradas) {
+      movimientos.push({
+        empresa_id: empresaId,
+        producto_id: productoId,
+        tipo: "compra",
+        cantidad: c.cantidad,
+        costo_unitario: c.costo,
+        referencia_id: c.documentoId,
+        fecha: c.fecha,
+      });
+    }
     for (const s of salidas) movimientos.push({ empresa_id: empresaId, producto_id: productoId, tipo: "merma", motivo: s.motivo, cantidad: -s.cantidad, fecha: s.fecha });
   }
 
@@ -194,7 +369,8 @@ async function crearProductos(empresaId) {
   for (let i = 0; i < movimientos.length; i += 500) {
     await ok(admin.from("movimientos_stock").insert(movimientos.slice(i, i + 500)), "registrar movimientos");
   }
-  return { productos: creados.length, movimientos: movimientos.length };
+  if (movimientos.some((m) => m.motivo === "stock_inicial" && m.cantidad <= 0)) throw new Error("Hay un stock inicial negativo: revisa las compras del demo");
+  return { productos: creados.length, movimientos: movimientos.length, compras: COMPRAS.length };
 }
 
 async function main() {
@@ -241,6 +417,7 @@ async function main() {
   console.log(`✓ Vendedores: ${DEMO.vendedores.map((v) => `${v.nombre} (PIN ${v.pin})`).join(", ")}`);
   console.log(`✓ Categorías: ${categorias.length}`);
   console.log(`✓ Productos: ${inventario.productos}, con ${inventario.movimientos} movimientos del último mes`);
+  console.log(`✓ Compras: ${inventario.compras} boletas confirmadas y 1 por confirmar (con foto)`);
 }
 
 main().catch((error) => {

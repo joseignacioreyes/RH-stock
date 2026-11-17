@@ -15,9 +15,12 @@
     "seed:demo": "node --env-file-if-exists=.env.local scripts/seed-demo.mjs",
     "cuenta:admin": "node --env-file-if-exists=.env.local scripts/cuentas.mjs admin",
     "cuenta:enlace-clave": "node --env-file-if-exists=.env.local scripts/cuentas.mjs enlace-clave",
-    "db:tipos": "supabase gen types typescript --local > tipos-db.tmp && (echo \"// Archivo GENERADO con npm run db:tipos. No editar a mano.\" && cat tipos-db.tmp) > src/lib/supabase/tipos-db.ts; rm -f tipos-db.tmp"
+    "db:tipos": "supabase gen types typescript --local > tipos-db.tmp && (echo \"// Archivo GENERADO con npm run db:tipos. No editar a mano.\" && cat tipos-db.tmp) > src/lib/supabase/tipos-db.ts; rm -f tipos-db.tmp",
+    "produccion:migrar": "node scripts/produccion/migrar.mjs",
+    "demo:boleta": "node scripts/demo/generar-boleta.mjs"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^1.9.0",
     "@supabase/ssr": "^0.12.7",
     "@supabase/supabase-js": "^2.119.0",
     "next": "16.4.6",

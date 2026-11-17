@@ -13,9 +13,10 @@ Este proyecto se construye con Claude Code siguiendo `CLAUDE.md`, por fases y co
 | Fase | Estado |
 |---|---|
 | 0. Preparación | ✅ Aprobada |
-| 1. Cuentas y seguridad | ✅ Aprobada (falta conectarla a Supabase de producción) |
-| 2. Productos e inventario | 🔍 En revisión ([capturas](previews/fase-2/index.html)) |
-| 2b. Modo caja | Pendiente |
+| 1. Cuentas y seguridad | ✅ Aprobada |
+| 2. Productos e inventario | ✅ Aprobada |
+| 2b. Modo caja | Pendiente (se hará después de la Fase 3) |
+| 3. Foto de la boleta | 🔍 En revisión ([capturas](previews/fase-3/index.html)) |
 
 ## Cuentas necesarias
 
@@ -47,6 +48,8 @@ npm run dev                       # abre http://localhost:3000
 | `npm run seed:demo` | Crea o deja como nuevo el negocio de ejemplo Almacén Don Pepe |
 | `npm run cuenta:admin -- --rut … --nombre "…" --correo …` | Crea la cuenta de administrador y entrega un enlace para elegir la clave |
 | `npm run cuenta:enlace-clave -- --rut …` | Enlace para que alguien elija una clave nueva (enviarlo solo a su correo registrado) |
+| `npm run produccion:migrar` | Aplica en el Supabase de producción las migraciones que falten (necesita `SUPABASE_ACCESS_TOKEN` y `SUPABASE_PROYECTO`) |
+| `npm run demo:boleta` | Vuelve a dibujar la boleta de ejemplo (inventada) |
 | `npm run db:tipos` | Actualiza los tipos de la base de datos después de cambiar una migración |
 | `npm run lint` / `npm run typecheck` | Revisan el código en busca de errores |
 | `npm run capturas -- 0` | Toma las capturas de la fase indicada (con `npm run dev` abierto en otra ventana) y arma `previews/fase-N/index.html` |
@@ -67,6 +70,7 @@ Están documentadas en [`.env.example`](.env.example). En tu computador van en `
 
 - Las tablas y reglas de seguridad están en `supabase/migrations/`. Cada negocio ve solo sus datos (RLS) y las pruebas están en `pruebas/db/rls.test.ts`.
 - **Nadie edita el stock a mano.** El stock solo cambia con movimientos (`movimientos_stock`: compra, venta, ajuste, merma), que no se pueden cambiar ni borrar. `productos.stock_actual` y `costo_promedio` se actualizan solos con cada movimiento (costo promedio ponderado).
+- **Boletas:** la foto se guarda en el espacio privado `boletas` (carpeta por negocio, enlaces firmados que vencen). La IA (`claude-haiku-5-5`, en `src/lib/lector-boletas/`) lee la foto con un esquema fijo validado con Zod; si falla dos veces, la boleta queda para revisión manual. El stock se suma solo al confirmar (`confirmar_documento`, todo o nada) y la app aprende la asociación descripción → producto (`alias_productos`).
 - Los empleados no ven costos: el dueño los obtiene con la función `costos_de_mi_negocio()`.
 - Las personas entran con RUT y clave. Por dentro, Supabase Auth usa un correo interno armado con el RUT (`12345678-5@cuentas.rhstock.cl`); el correo real queda en la tabla `usuarios` y se usa solo para recuperar la clave.
 - En el Supabase de producción: **Authentication → Sign In / Providers → desactivar "Allow new users to sign up"** (las cuentas las crea solo la app).

@@ -4,7 +4,8 @@ import { ComoSeUsa } from "@/components/ComoSeUsa";
 import { Aviso } from "@/components/ui/Aviso";
 import { BotonEnlace } from "@/components/ui/Boton";
 import { Pantalla } from "@/components/ui/Pantalla";
-import { formatearPesos } from "@/lib/formato";
+import { obtenerUltimasCompras } from "@/lib/compras";
+import { formatearFecha, formatearPesos } from "@/lib/formato";
 import { obtenerProductos } from "@/lib/productos";
 import { exigirSesionDeNegocio } from "@/lib/sesion";
 
@@ -13,7 +14,9 @@ export const metadata: Metadata = { title: "Mi stock" };
 export default async function PaginaMiStock({ searchParams }: PageProps<"/mi-stock">) {
   const sesion = await exigirSesionDeNegocio();
   const { listo, cambios } = await searchParams;
-  const productos = await obtenerProductos(sesion);
+  const [productos, compras] = await Promise.all([obtenerProductos(sesion), obtenerUltimasCompras(10)]);
+  const ultimaCompra = compras.find((c) => c.estado === "confirmado");
+  const porRevisar = compras.filter((c) => c.estado === "por_confirmar" || c.estado === "revision_manual").length;
   const esDueno = sesion.usuario.rol === "dueno";
 
   if (productos.length === 0) {
@@ -80,6 +83,26 @@ export default async function PaginaMiStock({ searchParams }: PageProps<"/mi-sto
             titulo={`Ganas poco con ${margenBajo} ${margenBajo === 1 ? "producto" : "productos"}`}
             detalle="Su precio deja menos ganancia de la que quieres."
             enlace={{ href: "/mi-stock/productos?filtro=margen-bajo", texto: "Ver cuáles" }}
+          />
+        )}
+        {porRevisar > 0 && (
+          <Tarjeta
+            color="amarillo"
+            icono="🧾"
+            titulo={`Tienes ${porRevisar === 1 ? "1 boleta" : `${porRevisar} boletas`} por revisar`}
+            detalle="Lo que compraste se suma a tu stock cuando la revisas."
+            enlace={{ href: "/subir-boleta", texto: "Revisar" }}
+          />
+        )}
+        {ultimaCompra && (
+          <Tarjeta
+            color="neutro"
+            icono="📷"
+            titulo={`Última compra: ${ultimaCompra.proveedor ?? "sin proveedor"}`}
+            detalle={`${formatearFecha(ultimaCompra.fecha ? `${ultimaCompra.fecha}T12:00:00` : ultimaCompra.creadoEn)}${
+              esDueno && ultimaCompra.total ? ` · ${formatearPesos(ultimaCompra.total)}` : ""
+            }`}
+            enlace={{ href: "/subir-boleta", texto: "Ver mis compras" }}
           />
         )}
         {esDueno && (

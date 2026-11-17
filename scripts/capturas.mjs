@@ -479,6 +479,201 @@ const PANTALLAS = {
       },
     ],
   },
+
+  3: {
+    titulo: "Fase 3: Foto de la boleta",
+    resumen:
+      "Subir boleta ya funciona: sacas la foto, la app la lee, revisas producto por producto (con sugerencias de cuál es) y al confirmar se suma el stock y se recalcula el costo. La app aprende para la próxima vez. La foto queda guardada en privado.",
+    preparar: prepararFase3,
+    recorrido: async (pagina) => {
+      await entrarComo(pagina, ROSA.rut, ROSA.clave);
+      await pagina.waitForURL("**/inicio");
+      await pausa(pagina);
+      await pagina.getByRole("link", { name: /Subir boleta/ }).click();
+      await pagina.waitForURL("**/subir-boleta");
+      await pausa(pagina, 1500);
+      await subirFoto(pagina, FOTO_BOLETA);
+      await pagina.getByText("Leyendo tu boleta").waitFor();
+      await pagina.waitForURL(/\/subir-boleta\/[0-9a-f-]{36}/, { timeout: 60_000 });
+      await pausa(pagina, 1500);
+      await revisarBoletaRosa(pagina, { pausar: true });
+      await pausa(pagina, 1500);
+      await pagina.getByRole("button", { name: "Sumar a mi stock" }).click();
+      await pagina.waitForURL("**/subir-boleta?listo=**");
+      await pausa(pagina, 2000);
+      await irAProducto(pagina, "Arroz");
+      await pausa(pagina, 2500);
+    },
+    pantallas: [
+      {
+        archivo: "01-subir-boleta",
+        ruta: "/",
+        titulo: "Subir boleta",
+        descripcion:
+          "Dos botones grandes: sacar foto o elegir de la galería. Abajo, un ejemplo de foto bien tomada y las últimas compras (la que dice “Falta revisar” está esperando que la confirmes).",
+        pasos: async (pagina) => {
+          await entrarAlDemo(pagina);
+          await pagina.goto(URL_APP + "/subir-boleta");
+        },
+      },
+      {
+        archivo: "02-leyendo",
+        ruta: "/",
+        titulo: "Leyendo tu boleta…",
+        descripcion: "Mientras la app lee la foto (unos segundos), se ve la foto y un aviso para no cerrar la pantalla. La foto se achica en el celular antes de subir.",
+        pasos: async (pagina) => {
+          await entrarComo(pagina, ROSA.rut, ROSA.clave);
+          await pagina.waitForURL("**/inicio");
+          await pagina.goto(URL_APP + "/subir-boleta");
+          await subirFoto(pagina, FOTO_BOLETA);
+          await pagina.getByText("Leyendo tu boleta").waitFor();
+          await pagina.waitForTimeout(400);
+        },
+        sinEsperar: true,
+      },
+      {
+        archivo: "03-foto-borrosa",
+        ruta: "/",
+        titulo: "Si la foto salió mal",
+        descripcion: "Si la foto está borrosa, oscura o cortada, la app lo dice en palabras simples y no guarda nada. Se vuelve a sacar al tiro.",
+        pasos: async (pagina) => {
+          await entrarComo(pagina, ROSA.rut, ROSA.clave);
+          await pagina.waitForURL("**/inicio");
+          await pagina.waitForTimeout(3500); // que termine la lectura de la captura anterior
+          await pagina.goto(URL_APP + "/subir-boleta");
+          await subirFoto(pagina, FOTO_MALA);
+          await pagina.getByRole("alert").waitFor({ timeout: 30_000 });
+        },
+      },
+      {
+        archivo: "04-revisar-datos",
+        ruta: "/",
+        titulo: "Revisar: datos de la boleta",
+        descripcion: "Primero lo general: a quién le compraste, la fecha y el total. Tocando la foto se ve grande.",
+        pasos: async (pagina) => {
+          await abrirBoletaDemo(pagina);
+        },
+      },
+      {
+        archivo: "05-revisar-reconocido",
+        ruta: "/",
+        titulo: "Revisar: producto reconocido",
+        descripcion: "Un producto por pantalla. “✨ La app lo reconoció” porque ya lo compraste antes a este proveedor. Se puede cambiar la cantidad o el precio si la IA leyó mal.",
+        pasos: async (pagina) => {
+          await abrirBoletaDemo(pagina);
+          await pagina.getByRole("button", { name: /Revisar los/ }).click();
+        },
+      },
+      {
+        archivo: "06-revisar-nuevo",
+        ruta: "/",
+        titulo: "Revisar: producto que no tienes",
+        descripcion: "Si es algo que nunca habías comprado (maní salado), la app propone “Es un producto nuevo”.",
+        pasos: async (pagina) => {
+          await abrirBoletaDemo(pagina);
+          await pagina.getByRole("button", { name: /Revisar los/ }).click();
+          for (let i = 0; i < 5; i++) await pagina.getByRole("button", { name: "Está bien" }).click();
+        },
+      },
+      {
+        archivo: "07-producto-nuevo",
+        ruta: "/",
+        titulo: "Agregar el producto nuevo",
+        descripcion: "Nombre, categoría y a cuánto lo venderás. La app sugiere el precio con tu margen objetivo: “Te costó $890. Con tu margen de 35% sugerimos $1.370”.",
+        pasos: async (pagina) => {
+          await abrirBoletaDemo(pagina);
+          await pagina.getByRole("button", { name: /Revisar los/ }).click();
+          for (let i = 0; i < 6; i++) await pagina.getByRole("button", { name: "Está bien" }).click();
+          await pagina.getByLabel("Categoría").selectOption({ label: "🍫 Snacks y dulces" });
+          await pagina.getByLabel("Nombre").fill("Maní salado 200 g");
+        },
+      },
+      {
+        archivo: "08-resumen",
+        ruta: "/",
+        titulo: "Último paso: lo que se va a sumar",
+        descripcion: "Todo lo que se sumará a tu stock, con el total. Si la suma no coincide con el total de la boleta, la app avisa. Tocando un producto se puede corregir.",
+        pasos: async (pagina) => {
+          await abrirBoletaDemo(pagina);
+          await revisarBoletaDemo(pagina);
+        },
+      },
+      {
+        archivo: "09-demo-no-guarda",
+        ruta: "/",
+        titulo: "En el demo no se guarda",
+        descripcion: "En el Almacén Don Pepe se puede recorrer todo, pero al final no se suma nada. Así el demo siempre queda igual.",
+        pasos: async (pagina) => {
+          await abrirBoletaDemo(pagina);
+          await revisarBoletaDemo(pagina);
+          await pagina.getByRole("button", { name: "Sumar a mi stock" }).click();
+          await pagina.getByRole("alert").waitFor();
+        },
+      },
+      {
+        archivo: "10-sumado",
+        ruta: "/",
+        titulo: "Listo: se sumó al stock",
+        descripcion: "Confirmación visible: “Listo, se sumaron 6 productos a tu stock”. La boleta queda en “Últimas compras” como “Sumada al stock”.",
+        pasos: async (pagina) => {
+          await entrarComo(pagina, ROSA.rut, ROSA.clave);
+          await pagina.waitForURL("**/inicio");
+          await pagina.goto(URL_APP + "/subir-boleta");
+          await subirFoto(pagina, FOTO_BOLETA);
+          await pagina.waitForURL(/\/subir-boleta\/[0-9a-f-]{36}/, { timeout: 60_000 });
+          await revisarBoletaRosa(pagina);
+          await pagina.getByRole("button", { name: "Sumar a mi stock" }).click();
+          await pagina.waitForURL("**/subir-boleta?listo=**");
+        },
+      },
+      {
+        archivo: "11-stock-actualizado",
+        ruta: "/",
+        titulo: "El stock ya cambió",
+        descripcion: "En la ficha del arroz aparece la compra (“Lo que compré +10”) y el nuevo stock. El costo se recalcula solo.",
+        pasos: async (pagina) => {
+          await entrarComo(pagina, ROSA.rut, ROSA.clave);
+          await pagina.waitForURL("**/inicio");
+          await irAProducto(pagina, "Arroz");
+        },
+      },
+      {
+        archivo: "12-boleta-sumada",
+        ruta: "/",
+        titulo: "Una compra ya sumada",
+        descripcion: "Cada compra confirmada queda guardada con sus productos y su foto (en un espacio privado, con enlaces que vencen).",
+        pasos: async (pagina) => {
+          await entrarAlDemo(pagina);
+          await pagina.goto(URL_APP + "/subir-boleta");
+          await pagina.getByRole("link", { name: /Sumada al stock/ }).first().click();
+          await pagina.waitForURL(/\/subir-boleta\/[0-9a-f-]{36}/);
+        },
+      },
+      {
+        archivo: "13-a-mano",
+        ruta: "/",
+        titulo: "Ingresar una compra a mano",
+        descripcion: "Si no hay foto (o la IA no pudo leerla), se puede ingresar a mano con los mismos pasos.",
+        pasos: async (pagina) => {
+          await entrarComo(pagina, ROSA.rut, ROSA.clave);
+          await pagina.waitForURL("**/inicio");
+          await pagina.goto(URL_APP + "/subir-boleta");
+          await pagina.getByRole("button", { name: /ingresar la compra a mano/ }).click();
+          await pagina.waitForURL(/\/subir-boleta\/[0-9a-f-]{36}/);
+        },
+      },
+      {
+        archivo: "14-mi-stock-compras",
+        ruta: "/",
+        titulo: "Mi stock con las compras",
+        descripcion: "“Mi stock” ahora avisa si hay boletas por revisar y muestra la última compra.",
+        pasos: async (pagina) => {
+          await entrarAlDemo(pagina);
+          await pagina.goto(URL_APP + "/mi-stock");
+        },
+      },
+    ],
+  },
 };
 
 // ---------------------------------------------------------------------------
@@ -670,6 +865,61 @@ async function contarPanaderia(pagina) {
   await pagina.getByRole("heading", { name: /diferencia|cuadra/ }).waitFor();
 }
 
+
+const FOTO_BOLETA = path.join(raiz, "public/ejemplos/boleta-bien-tomada.jpg");
+/** Foto mínima (1×1 px): en modo de ejemplo la app la trata como "borrosa". */
+const FOTO_MALA = {
+  name: "borrosa.png",
+  mimeType: "image/png",
+  buffer: Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==", "base64"),
+};
+
+async function prepararFase3() {
+  const admin = clienteAdminLocal();
+  await negocioDePrueba(admin, ROSA, PRODUCTOS_ROSA);
+  const respuesta = await fetch(URL_APP + "/subir-boleta").catch(() => null);
+  if (!respuesta) throw new Error("La app no responde");
+  console.log("(Recuerda: la app debe correr con LECTOR_BOLETAS=ejemplo LECTOR_BOLETAS_DEMORA=2500 para estas capturas)");
+}
+
+async function subirFoto(pagina, archivo) {
+  await pagina.locator('input[type="file"][capture]').setInputFiles(archivo);
+}
+
+async function abrirBoletaDemo(pagina) {
+  await entrarAlDemo(pagina);
+  await pagina.goto(URL_APP + "/subir-boleta");
+  await pagina.getByRole("link", { name: /Falta revisar/ }).first().click();
+  await pagina.waitForURL(/\/subir-boleta\/[0-9a-f-]{36}/);
+}
+
+async function revisarBoletaDemo(pagina) {
+  await pagina.getByRole("button", { name: /Revisar los/ }).click();
+  for (let i = 0; i < 6; i++) await pagina.getByRole("button", { name: "Está bien" }).click();
+  await pagina.getByLabel("Categoría").selectOption({ label: "🍫 Snacks y dulces" });
+  await pagina.getByLabel("Nombre").fill("Maní salado 200 g");
+  await pagina.getByRole("button", { name: "Seguir" }).click();
+  await pagina.getByRole("heading", { name: /Esto se va a sumar/ }).waitFor();
+}
+
+/** Rosa solo tiene arroz de lo que trae la boleta: lo demás se agrega como producto nuevo. */
+async function revisarBoletaRosa(pagina, { pausar = false } = {}) {
+  const CATEGORIAS = ["🍚 Abarrotes", "🍚 Abarrotes", "🍚 Abarrotes", "🍫 Snacks y dulces", "🍚 Abarrotes", "🍫 Snacks y dulces"];
+  await pagina.getByRole("button", { name: /Revisar los/ }).click();
+  for (let i = 0; i < 6; i++) {
+    if (pausar) await pausa(pagina, 700);
+    await pagina.getByRole("button", { name: "Está bien" }).click();
+    await pagina.waitForTimeout(200);
+    const nuevo = pagina.getByRole("heading", { name: "Agregar a mis productos" });
+    if (await nuevo.isVisible().catch(() => false)) {
+      await pagina.getByLabel("Categoría").selectOption({ label: CATEGORIAS[i] });
+      if (pausar) await pausa(pagina, 500);
+      await pagina.getByRole("button", { name: "Seguir" }).click();
+    }
+  }
+  await pagina.getByRole("heading", { name: /Esto se va a sumar/ }).waitFor();
+}
+
 const escaparHtml = (texto) =>
   String(texto).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
 
@@ -688,6 +938,13 @@ async function capturar(navegador, carpeta, pantalla, tamano, sufijo, escala) {
   await pagina.goto(URL_APP + pantalla.ruta, { waitUntil: "networkidle" });
   if (pantalla.pasos) {
     await pantalla.pasos(pagina);
+    if (pantalla.sinEsperar) {
+      await pagina.evaluate(() => document.fonts.ready);
+      const archivo = `${pantalla.archivo}${sufijo}.png`;
+      await pagina.screenshot({ path: path.join(carpeta, archivo), fullPage: true });
+      await contexto.close();
+      return archivo;
+    }
     // Espera a que la pantalla termine de cargar (sin quedarse pegado si algo sigue abierto).
     await pagina.waitForLoadState("networkidle", { timeout: 5000 }).catch(() => {});
     await pagina.waitForTimeout(300);
