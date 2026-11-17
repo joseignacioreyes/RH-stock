@@ -12,8 +12,9 @@ Este proyecto se construye con Claude Code siguiendo `CLAUDE.md`, por fases y co
 
 | Fase | Estado |
 |---|---|
-| 0. Preparación | ✅ Lista (falta publicarla en rhstock.cl: ver [cuentas](docs/fase-0-cuentas.md)) |
-| 1. Cuentas y seguridad | Pendiente |
+| 0. Preparación | ✅ Aprobada |
+| 1. Cuentas y seguridad | 🔍 En revisión ([capturas](previews/fase-1/index.html)) |
+| 2. Productos e inventario | Pendiente |
 
 ## Cuentas necesarias
 
@@ -23,10 +24,14 @@ Paso a paso en [`docs/fase-0-cuentas.md`](docs/fase-0-cuentas.md): Vercel, domin
 
 Necesitas [Node.js](https://nodejs.org) 22 o más nuevo.
 
+Necesitas además [Docker](https://www.docker.com) para la base de datos de prueba.
+
 ```bash
 npm install
 npx playwright install chromium   # solo la primera vez, para las capturas
-cp .env.example .env.local        # y completa los valores
+npx supabase start                # base de datos de prueba en tu computador
+cp .env.example .env.local        # y completa con lo que muestra "npx supabase status"
+npm run seed:demo                 # carga el negocio de ejemplo Almacén Don Pepe
 npm run dev                       # abre http://localhost:3000
 ```
 
@@ -36,7 +41,12 @@ npm run dev                       # abre http://localhost:3000
 |---|---|
 | `npm run dev` | Abre la app en tu computador (http://localhost:3000) |
 | `npm run build` | Prepara la versión final (lo mismo que hace Vercel) |
-| `npm test` | Corre las pruebas automáticas |
+| `npm test` | Corre las pruebas automáticas (RUT, formularios, WhatsApp) |
+| `npm run test:db` | Prueba las reglas de seguridad entre negocios (necesita `npx supabase start`) |
+| `npm run seed:demo` | Crea o deja como nuevo el negocio de ejemplo Almacén Don Pepe |
+| `npm run cuenta:admin -- --rut … --nombre "…" --correo …` | Crea la cuenta de administrador y entrega un enlace para elegir la clave |
+| `npm run cuenta:enlace-clave -- --rut …` | Enlace para que alguien elija una clave nueva (enviarlo solo a su correo registrado) |
+| `npm run db:tipos` | Actualiza los tipos de la base de datos después de cambiar una migración |
 | `npm run lint` / `npm run typecheck` | Revisan el código en busca de errores |
 | `npm run capturas -- 0` | Toma las capturas de la fase indicada (con `npm run dev` abierto en otra ventana) y arma `previews/fase-N/index.html` |
 | `npm run marca` | Vuelve a generar el favicon, los íconos y la imagen para compartir desde los SVG de `public/brand/` |
@@ -52,9 +62,19 @@ Están documentadas en [`.env.example`](.env.example). En tu computador van en `
 3. Cada cambio en `main` se publica en producción; cada cambio en otra rama crea un link de prueba.
 4. Conecta el dominio en **Settings → Domains** (detalle en [`docs/fase-0-cuentas.md`](docs/fase-0-cuentas.md)).
 
+## Base de datos
+
+- Las tablas y reglas de seguridad están en `supabase/migrations/`. Cada negocio ve solo sus datos (RLS) y las pruebas están en `pruebas/db/rls.test.ts`.
+- Las personas entran con RUT y clave. Por dentro, Supabase Auth usa un correo interno armado con el RUT (`12345678-5@cuentas.rhstock.cl`); el correo real queda en la tabla `usuarios` y se usa solo para recuperar la clave.
+- En el Supabase de producción: **Authentication → Sign In / Providers → desactivar "Allow new users to sign up"** (las cuentas las crea solo la app).
+
 ## Crear el primer administrador
 
-Se agrega en la Fase 1.
+```bash
+npm run cuenta:admin -- --rut 11.111.111-1 --nombre "Nombre Apellido" --correo nombre@correo.cl
+```
+
+Muestra un enlace (dura 1 hora) para elegir la clave. Los datos se escriben al correr el comando y no quedan en el código.
 
 ## Estructura
 
@@ -62,6 +82,9 @@ Se agrega en la Fase 1.
 src/app/            Pantallas (Next.js App Router), íconos y datos de la app instalable
 src/components/     Piezas reutilizables (logo, botón de WhatsApp…)
 src/lib/            Configuración y funciones (con sus pruebas *.test.ts)
+src/proxy.ts        Renueva la sesión y protege las pantallas privadas
+supabase/           Configuración local y migraciones de la base de datos
+pruebas/db/         Pruebas de seguridad contra la base de datos
 public/brand/       Logo, ícono y sus versiones PNG
 scripts/            Generar íconos y tomar capturas
 previews/fase-N/    Capturas y página de revisión de cada fase

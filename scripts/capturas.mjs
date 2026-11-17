@@ -1,15 +1,18 @@
-// Toma las capturas de pantalla de una fase y arma su página de revisión.
+// Toma las capturas de pantalla de una fase, graba el video del recorrido y arma su página de revisión.
 //
-//   1. En una ventana:  npm run dev
-//   2. En otra ventana: npm run capturas -- 0        (el número es la fase)
+//   1. Supabase local encendido (npx supabase start) y el demo cargado (npm run seed:demo)
+//   2. En una ventana:  npm run dev
+//   3. En otra ventana: npm run capturas -- 1        (el número es la fase)
 //
-// Deja las imágenes y la página en previews/fase-N/. Abre previews/fase-N/index.html en el navegador.
-// Si la app corre en otra dirección: URL_APP=http://localhost:3001 npm run capturas -- 0
+// Deja las imágenes, el video y la página en previews/fase-N/. Abre previews/fase-N/index.html en el navegador.
+// Si la app corre en otra dirección: URL_APP=http://localhost:3001 npm run capturas -- 1
 
-import { mkdir, writeFile } from "node:fs/promises";
+import { mkdir, rename, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { randomInt } from "node:crypto";
 import { chromium } from "@playwright/test";
+import { createClient } from "@supabase/supabase-js";
 
 const raiz = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const URL_APP = (process.env.URL_APP || "http://localhost:3000").replace(/\/$/, "");
@@ -23,6 +26,11 @@ const ESCRITORIO = { width: 1366, height: 768 };
  * - ruta: dirección dentro de la app.
  * - descripcion: qué hace la pantalla y qué debería probar José.
  * - escritorio: true para tomar también la versión de computador (pantallas de administrador).
+ * - pasos: (opcional) lo que hay que hacer antes de la captura (entrar, llenar un formulario…).
+ *
+ * Cada fase puede tener además:
+ * - preparar: se corre una vez antes de las capturas (por ejemplo, crear una cuenta de prueba).
+ * - recorrido: los pasos del video (previews/fase-N/recorrido.webm).
  */
 const PANTALLAS = {
   0: {
@@ -47,7 +55,254 @@ const PANTALLAS = {
       },
     ],
   },
+  1: {
+    titulo: "Fase 1: Cuentas y seguridad",
+    resumen:
+      "Ya se puede crear una cuenta con RUT y clave, entrar, mirar el negocio de ejemplo Almacén Don Pepe y leer los borradores legales. Cada negocio ve solo sus datos (28 pruebas automáticas lo confirman).",
+    preparar: prepararFase1,
+    recorrido: async (pagina) => {
+      await pagina.goto(URL_APP + "/");
+      await pausa(pagina);
+      await pagina.getByRole("button", { name: "Probar sin registrarse" }).click();
+      await pagina.waitForURL("**/inicio");
+      await pausa(pagina);
+      await pagina.getByRole("link", { name: /Más/ }).click();
+      await pagina.waitForURL("**/mas");
+      await pausa(pagina);
+      await pagina.getByRole("button", { name: "Crear mi cuenta" }).click();
+      await pagina.waitForURL("**/registro");
+      await llenarRegistro(pagina, { pausar: true });
+      await pagina.waitForURL("**/inicio?bienvenida=1");
+      await pausa(pagina, 2500);
+    },
+    pantallas: [
+      {
+        archivo: "01-portada",
+        ruta: "/",
+        titulo: "Portada",
+        descripcion:
+          "Ahora tiene “Probar sin registrarse” (entra al negocio de ejemplo), “Crear mi cuenta” y el botón “Entrar” arriba. Más abajo sigue el botón de WhatsApp.",
+        escritorio: true,
+      },
+      {
+        archivo: "02-entrar",
+        ruta: "/entrar",
+        titulo: "Entrar",
+        descripcion: "Se entra con RUT y clave. Los puntos y el guion del RUT se ponen solos. El botón “Mostrar” deja ver la clave.",
+      },
+      {
+        archivo: "03-entrar-error",
+        ruta: "/entrar",
+        titulo: "Entrar: clave equivocada",
+        descripcion: "Si el RUT o la clave están mal, el mensaje dice qué hacer, sin palabras técnicas.",
+        pasos: async (pagina) => {
+          await pagina.getByLabel("Tu RUT").fill("123456785");
+          await pagina.getByLabel("Tu clave", { exact: true }).fill("ClaveMala1");
+          await pagina.getByRole("button", { name: "Entrar" }).click();
+          await pagina.getByRole("alert").waitFor();
+        },
+      },
+      {
+        archivo: "04-registro-paso-1",
+        ruta: "/registro",
+        titulo: "Crear mi cuenta: paso 1 de 3",
+        descripcion: "Máximo 3 datos por pantalla. Paso 1: nombre, RUT y correo (el correo es solo para recuperar la clave).",
+      },
+      {
+        archivo: "05-registro-rut-malo",
+        ruta: "/registro",
+        titulo: "Paso 1 con un RUT equivocado",
+        descripcion: "La app revisa el dígito verificador del RUT y avisa al tiro, en rojo y con palabras simples.",
+        pasos: async (pagina) => {
+          await pagina.getByLabel("Tu nombre").fill("Rosa Pérez");
+          await pagina.getByLabel("Tu RUT").fill("123456789");
+          await pagina.getByLabel("Tu correo").fill("rosa@ejemplo.cl");
+          await pagina.getByRole("button", { name: "Seguir" }).click();
+        },
+      },
+      {
+        archivo: "06-registro-paso-2",
+        ruta: "/registro",
+        titulo: "Crear mi cuenta: paso 2 de 3",
+        descripcion: "Los datos del negocio. La comuna ya viene escrita (Puente Alto).",
+        pasos: async (pagina) => {
+          await llenarPaso1(pagina);
+        },
+      },
+      {
+        archivo: "07-registro-paso-3",
+        ruta: "/registro",
+        titulo: "Crear mi cuenta: paso 3 de 3",
+        descripcion: "La clave y la aceptación de términos y privacidad, en casillas separadas y sin marcar.",
+        pasos: async (pagina) => {
+          await llenarPaso1(pagina);
+          await llenarPaso2(pagina);
+        },
+      },
+      {
+        archivo: "08-inicio-bienvenida",
+        ruta: "/registro",
+        titulo: "Inicio, recién creada la cuenta",
+        descripcion:
+          "Después de registrarse, entra directo. La pantalla de inicio tiene solo 4 botones grandes y “Más”. Abajo, siempre, “Ayuda por WhatsApp”.",
+        pasos: async (pagina) => {
+          await llenarRegistro(pagina);
+          await pagina.waitForURL("**/inicio?bienvenida=1");
+        },
+      },
+      {
+        archivo: "09-inicio-demo",
+        ruta: "/",
+        titulo: "Negocio de ejemplo (demo)",
+        descripcion:
+          "Con “Probar sin registrarse” se entra al Almacén Don Pepe. La franja amarilla avisa que es un ejemplo. Es solo para mirar: no se puede modificar.",
+        pasos: entrarAlDemo,
+      },
+      {
+        archivo: "10-muy-pronto",
+        ruta: "/",
+        titulo: "Secciones que vienen",
+        descripcion: "“Subir boleta”, “Vender”, “Mi stock” y “Avisos” se construyen en las próximas fases. Por ahora muestran este aviso.",
+        pasos: async (pagina) => {
+          await entrarAlDemo(pagina);
+          await pagina.getByRole("link", { name: /Subir boleta/ }).click();
+          await pagina.waitForURL("**/subir-boleta");
+        },
+      },
+      {
+        archivo: "11-mas",
+        ruta: "/",
+        titulo: "Más",
+        descripcion: "Aquí irán ajustes, pagos, vendedores y exportar. Por ahora: los textos legales y “Cerrar sesión”.",
+        pasos: async (pagina) => {
+          await entrarAlDemo(pagina);
+          await pagina.getByRole("link", { name: /Más/ }).click();
+          await pagina.waitForURL("**/mas");
+        },
+      },
+      {
+        archivo: "12-olvide-mi-clave",
+        ruta: "/recuperar-clave",
+        titulo: "¿Olvidaste tu clave?",
+        descripcion:
+          "Por ahora se recupera por WhatsApp: tú generas un enlace y se lo mandas a su correo registrado. En la Fase 4 será automático.",
+      },
+      {
+        archivo: "13-privacidad",
+        ruta: "/privacidad",
+        titulo: "Política de privacidad (borrador)",
+        descripcion: "Borrador en lenguaje simple, según la Ley 21.719. Faltan los datos de la SpA (entre corchetes). Debe revisarlo un abogado.",
+      },
+      {
+        archivo: "14-terminos",
+        ruta: "/terminos",
+        titulo: "Términos y condiciones (borrador)",
+        descripcion: "Incluye pago por transferencia, recordatorio 3 días antes y modo “solo mirar” a los 10 días de atraso, sin borrar datos.",
+      },
+      {
+        archivo: "15-admin",
+        ruta: "/entrar",
+        titulo: "Panel de administrador",
+        descripcion:
+          "Tu cuenta de administrador ve la lista de negocios y su estado de pago, pero no el detalle de cada negocio. En la Fase 5 se suman pagos y confirmaciones.",
+        escritorio: true,
+        pasos: async (pagina) => {
+          await entrarComo(pagina, ADMIN_PRUEBA.rut, ADMIN_PRUEBA.clave);
+          await pagina.waitForURL("**/admin");
+        },
+      },
+    ],
+  },
 };
+
+
+// ---------------------------------------------------------------------------
+// Ayudas para las pantallas que necesitan sesión o formularios llenos
+// ---------------------------------------------------------------------------
+
+/** Administrador ficticio, solo para las capturas en el Supabase local. */
+const ADMIN_PRUEBA = { rut: "11.111.111-1", rutNormalizado: "11111111-1", nombre: "Admin de Prueba", clave: "Prueba1234" };
+
+const pausa = (pagina, ms = 1200) => pagina.waitForTimeout(ms);
+
+function rutAlAzar() {
+  const numero = String(randomInt(30_000_000, 99_999_999));
+  let suma = 0;
+  let multiplicador = 2;
+  for (let i = numero.length - 1; i >= 0; i--) {
+    suma += Number(numero[i]) * multiplicador;
+    multiplicador = multiplicador === 7 ? 2 : multiplicador + 1;
+  }
+  const resto = 11 - (suma % 11);
+  return numero + (resto === 11 ? "0" : resto === 10 ? "K" : String(resto));
+}
+
+async function entrarAlDemo(pagina) {
+  await pagina.goto(URL_APP + "/");
+  await pagina.getByRole("button", { name: "Probar sin registrarse" }).click();
+  await pagina.waitForURL("**/inicio");
+}
+
+async function entrarComo(pagina, rut, clave) {
+  await pagina.goto(URL_APP + "/entrar");
+  await pagina.getByLabel("Tu RUT").fill(rut);
+  await pagina.getByLabel("Tu clave", { exact: true }).fill(clave);
+  await pagina.getByRole("button", { name: "Entrar" }).click();
+}
+
+async function llenarPaso1(pagina, { pausar = false } = {}) {
+  await pagina.getByLabel("Tu nombre").pressSequentially("Rosa Pérez", { delay: pausar ? 40 : 0 });
+  await pagina.getByLabel("Tu RUT").pressSequentially(rutAlAzar(), { delay: pausar ? 40 : 0 });
+  await pagina.getByLabel("Tu correo").pressSequentially("rosa@ejemplo.cl", { delay: pausar ? 30 : 0 });
+  if (pausar) await pausa(pagina);
+  await pagina.getByRole("button", { name: "Seguir" }).click();
+  await pagina.getByRole("heading", { name: "Tu negocio" }).waitFor();
+}
+
+async function llenarPaso2(pagina, { pausar = false } = {}) {
+  await pagina.getByLabel("Nombre de tu negocio").pressSequentially("Almacén Rosita", { delay: pausar ? 40 : 0 });
+  await pagina.getByLabel("RUT del negocio").pressSequentially(rutAlAzar(), { delay: pausar ? 40 : 0 });
+  if (pausar) await pausa(pagina);
+  await pagina.getByRole("button", { name: "Seguir" }).click();
+  await pagina.getByRole("heading", { name: "Elige tu clave" }).waitFor();
+}
+
+async function llenarRegistro(pagina, opciones = {}) {
+  await llenarPaso1(pagina, opciones);
+  await llenarPaso2(pagina, opciones);
+  await pagina.getByLabel("Tu clave", { exact: true }).pressSequentially("Rosita2026", { delay: opciones.pausar ? 40 : 0 });
+  await pagina.getByRole("checkbox", { name: /términos/ }).check();
+  await pagina.getByRole("checkbox", { name: /privacidad/ }).check();
+  if (opciones.pausar) await pausa(pagina);
+  await pagina.getByRole("button", { name: "Crear mi cuenta" }).click();
+}
+
+/** Crea (o deja al día) el administrador ficticio en el Supabase LOCAL. Nunca toca un Supabase real. */
+async function prepararFase1() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
+  if (!/127\.0\.0\.1|localhost/.test(url)) {
+    throw new Error("Las capturas de la Fase 1 se toman solo con Supabase local (npx supabase start).");
+  }
+  const admin = createClient(url, process.env.SUPABASE_SERVICE_ROLE_KEY, { auth: { persistSession: false } });
+  const correo = `${ADMIN_PRUEBA.rutNormalizado.toLowerCase()}@cuentas.rhstock.cl`;
+
+  const { data: existente } = await admin.from("usuarios").select("id").eq("rut", ADMIN_PRUEBA.rutNormalizado).maybeSingle();
+  if (existente) {
+    await admin.auth.admin.updateUserById(existente.id, { password: ADMIN_PRUEBA.clave });
+    return;
+  }
+  const { data, error } = await admin.auth.admin.createUser({ email: correo, password: ADMIN_PRUEBA.clave, email_confirm: true });
+  if (error) throw error;
+  const { error: errorFicha } = await admin.from("usuarios").insert({
+    id: data.user.id,
+    empresa_id: null,
+    rut: ADMIN_PRUEBA.rutNormalizado,
+    nombre: ADMIN_PRUEBA.nombre,
+    correo: "admin.prueba@ejemplo.cl",
+    rol: "admin",
+  });
+  if (errorFicha) throw errorFicha;
+}
 
 const escaparHtml = (texto) =>
   String(texto).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
@@ -65,6 +320,12 @@ async function capturar(navegador, carpeta, pantalla, tamano, sufijo, escala) {
   const contexto = await navegador.newContext({ viewport: tamano, deviceScaleFactor: escala, locale: "es-CL" });
   const pagina = await contexto.newPage();
   await pagina.goto(URL_APP + pantalla.ruta, { waitUntil: "networkidle" });
+  if (pantalla.pasos) {
+    await pantalla.pasos(pagina);
+    // Espera a que la pantalla termine de cargar (sin quedarse pegado si algo sigue abierto).
+    await pagina.waitForLoadState("networkidle", { timeout: 5000 }).catch(() => {});
+    await pagina.waitForTimeout(300);
+  }
   await pagina.evaluate(() => document.fonts.ready);
   const archivo = `${pantalla.archivo}${sufijo}.png`;
   await pagina.screenshot({ path: path.join(carpeta, archivo), fullPage: true });
@@ -72,7 +333,20 @@ async function capturar(navegador, carpeta, pantalla, tamano, sufijo, escala) {
   return archivo;
 }
 
-function paginaDeRevision(config, capturas) {
+/** Graba en video el recorrido principal de la fase, en tamaño celular. */
+async function grabarRecorrido(navegador, carpeta, recorrido) {
+  const carpetaVideo = path.join(carpeta, ".video");
+  const contexto = await navegador.newContext({ viewport: CELULAR, locale: "es-CL", recordVideo: { dir: carpetaVideo, size: CELULAR } });
+  const pagina = await contexto.newPage();
+  await recorrido(pagina);
+  await contexto.close();
+  const archivo = "recorrido.webm";
+  await rename(await pagina.video().path(), path.join(carpeta, archivo));
+  await rm(carpetaVideo, { recursive: true, force: true });
+  return archivo;
+}
+
+function paginaDeRevision(config, capturas, video) {
   const tarjetas = capturas
     .map(
       ({ pantalla, celular, escritorio }, i) => `
@@ -110,6 +384,7 @@ function paginaDeRevision(config, capturas) {
   figcaption { text-align:center; color:var(--suave); font-size:16px; margin-top:6px; }
   img { display:block; max-width:100%; height:auto; border:1px solid #E5E7EB; border-radius:12px; }
   .celular img { width:300px; }
+  video { display:block; max-width:100%; border-radius:12px; border:1px solid #E5E7EB; }
   .escritorio { flex:1 1 480px; }
   footer { text-align:center; color:var(--suave); font-size:16px; padding:24px 16px 40px; }
 </style>
@@ -120,6 +395,11 @@ function paginaDeRevision(config, capturas) {
   <p>${escaparHtml(config.resumen)}</p>
 </header>
 <main>
+${
+  video
+    ? `<article class="tarjeta"><h2><span class="numero">▶</span> Video del recorrido</h2><p>El recorrido principal de la fase, como lo haría un almacenero.</p><video src="${video}" controls muted playsinline width="300"></video></article>`
+    : ""
+}
 ${tarjetas}
 </main>
 <footer>Capturas tomadas automáticamente el ${new Date().toLocaleDateString("es-CL", { timeZone: "America/Santiago" })}.</footer>
@@ -144,8 +424,11 @@ async function main() {
   const carpeta = path.join(raiz, "previews", `fase-${fase}`);
   await mkdir(carpeta, { recursive: true });
 
+  if (config.preparar) await config.preparar();
+
   const navegador = await chromium.launch();
   const capturas = [];
+  let video = null;
   try {
     for (const pantalla of config.pantallas) {
       const celular = await capturar(navegador, carpeta, pantalla, CELULAR, "", 2);
@@ -153,11 +436,15 @@ async function main() {
       capturas.push({ pantalla, celular, escritorio });
       console.log(`✓ ${celular}${escritorio ? ` y ${escritorio}` : ""}`);
     }
+    if (config.recorrido) {
+      video = await grabarRecorrido(navegador, carpeta, config.recorrido);
+      console.log(`✓ ${video}`);
+    }
   } finally {
     await navegador.close();
   }
 
-  await writeFile(path.join(carpeta, "index.html"), paginaDeRevision(config, capturas));
+  await writeFile(path.join(carpeta, "index.html"), paginaDeRevision(config, capturas, video));
   console.log(`\nListo. Abre previews/fase-${fase}/index.html en el navegador.`);
 }
 

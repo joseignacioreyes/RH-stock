@@ -10,12 +10,21 @@
     "typecheck": "next typegen && tsc --noEmit",
     "test": "vitest run",
     "marca": "node scripts/marca/generar-marca.mjs",
-    "capturas": "node scripts/capturas.mjs"
+    "capturas": "node --env-file-if-exists=.env.local scripts/capturas.mjs",
+    "test:db": "vitest run --config vitest.db.config.mts",
+    "seed:demo": "node --env-file-if-exists=.env.local scripts/seed-demo.mjs",
+    "cuenta:admin": "node --env-file-if-exists=.env.local scripts/cuentas.mjs admin",
+    "cuenta:enlace-clave": "node --env-file-if-exists=.env.local scripts/cuentas.mjs enlace-clave",
+    "db:tipos": "supabase gen types typescript --local > src/lib/supabase/tipos-db.ts && sed -i \"1i // Archivo GENERADO con \\\"npm run db:tipos\\\". No editar a mano.\" src/lib/supabase/tipos-db.ts"
   },
   "dependencies": {
+    "@supabase/ssr": "^0.12.7",
+    "@supabase/supabase-js": "^2.119.0",
     "next": "16.4.6",
     "react": "19.3.0",
-    "react-dom": "19.3.0"
+    "react-dom": "19.3.0",
+    "server-only": "^0.0.1",
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@fontsource/poppins": "^5.3.0",
@@ -27,6 +36,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.4.6",
     "opentype.js": "^2.0.0",
+    "supabase": "^2.122.1",
     "tailwindcss": "4.3.3",
     "typescript": "^5",
     "vitest": "^5.1.0"

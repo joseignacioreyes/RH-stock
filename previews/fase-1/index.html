@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="es-CL">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Revisión Fase 1: Cuentas y seguridad | RH Stock</title>
+<style>
+  :root { --marca:#0F766E; --texto:#1F2937; --suave:#4B5563; --fondo:#F3F4F6; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--fondo); color:var(--texto); font:18px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  header { background:var(--marca); color:#fff; padding:24px 16px; }
+  header h1 { margin:0; font-size:28px; }
+  header p { margin:8px 0 0; max-width:720px; }
+  main { max-width:1100px; margin:0 auto; padding:16px; display:grid; gap:24px; }
+  .tarjeta { background:#fff; border-radius:16px; padding:20px; box-shadow:0 1px 3px rgb(0 0 0 / .08); }
+  .tarjeta h2 { margin:0 0 8px; font-size:22px; display:flex; align-items:center; gap:12px; }
+  .numero { display:inline-flex; align-items:center; justify-content:center; width:36px; height:36px; border-radius:50%; background:var(--marca); color:#fff; font-size:18px; flex-shrink:0; }
+  .tarjeta p { margin:0 0 16px; color:var(--suave); }
+  .imagenes { display:flex; flex-wrap:wrap; gap:20px; align-items:flex-start; }
+  figure { margin:0; }
+  figcaption { text-align:center; color:var(--suave); font-size:16px; margin-top:6px; }
+  img { display:block; max-width:100%; height:auto; border:1px solid #E5E7EB; border-radius:12px; }
+  .celular img { width:300px; }
+  video { display:block; max-width:100%; border-radius:12px; border:1px solid #E5E7EB; }
+  .escritorio { flex:1 1 480px; }
+  footer { text-align:center; color:var(--suave); font-size:16px; padding:24px 16px 40px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>RH Stock · Fase 1: Cuentas y seguridad</h1>
+  <p>Ya se puede crear una cuenta con RUT y clave, entrar, mirar el negocio de ejemplo Almacén Don Pepe y leer los borradores legales. Cada negocio ve solo sus datos (28 pruebas automáticas lo confirman).</p>
+</header>
+<main>
+<article class="tarjeta"><h2><span class="numero">▶</span> Video del recorrido</h2><p>El recorrido principal de la fase, como lo haría un almacenero.</p><video src="recorrido.webm" controls muted playsinline width="300"></video></article>
+
+      <article class="tarjeta">
+        <h2><span class="numero">1</span> Portada</h2>
+        <p>Ahora tiene “Probar sin registrarse” (entra al negocio de ejemplo), “Crear mi cuenta” y el botón “Entrar” arriba. Más abajo sigue el botón de WhatsApp.</p>
+        <div class="imagenes">
+          <figure class="celular"><img src="01-portada.png" alt="Portada en celular" loading="lazy"><figcaption>Celular</figcaption></figure>
+          <figure class="escritorio"><img src="01-portada-escritorio.png" alt="Portada en computador" loading="lazy"><figcaption>Computador</figcaption></figure>
+        </div>
+      </article>
+
+      <article class="tarjeta">
+        <h2><span class="numero">2</span> Entrar</h2>
+        <p>Se entra con RUT y clave. Los puntos y el guion del RUT se ponen solos. El botón “Mostrar” deja ver la clave.</p>
+        <div class="imagenes">
+          <figure class="celular"><img src="02-entrar.png" alt="Entrar en celular" loading="lazy"><figcaption>Celular</figcaption></figure>
+          
+        </div>
+      </article>
+
+      <article class="tarjeta">
+        <h2><span class="numero">3</span> Entrar: clave equivocada</h2>
+        <p>Si el RUT o la clave están mal, el mensaje dice qué hacer, sin palabras técnicas.</p>
+        <div class="imagenes">
+          <figure class="celular"><img src="03-entrar-error.png" alt="Entrar: clave equivocada en celular" loading="lazy"><figcaption>Celular</figcaption></figure>
+          
+        </div>
+      </article>
+
+      <article class="tarjeta">
+        <h2><span class="numero">4</span> Crear mi cuenta: paso 1 de 3</h2>
+        <p>Máximo 3 datos por pantalla. Paso 1: nombre, RUT y correo (el correo es solo para recuperar la clave).</p>
+        <div class="imagenes">
+          <figure class="celular"><img src="04-registro-paso-1.png" alt="Crear mi cuenta: paso 1 de 3 en celular" loading="lazy"><figcaption>Celular</figcaption></figure>
+          
+        </div>
+      </article>
+
+      <article class="tarjeta">
+        <h2><span class="numero">5</span> Paso 1 con un RUT equivocado</h2>
+        <p>La app revisa el dígito verificador del RUT y avisa al tiro, en rojo y con palabras simples.</p>
+        <div class="imagenes">
+          <figure class="celular"><img src="05-registro-rut-malo.png" alt="Paso 1 con un RUT equivocado en celular" loading="lazy"><figcaption>Celular</figcaption></figure>
+          
+        </div>
+      </article>
+
+      <article class="tarjeta">
+        <h2><span class="numero">6</span> Crear mi cuenta: paso 2 de 3</h2>
+        <p>Los datos del negocio. La comuna ya viene escrita (Puente Alto).</p>
+        <div class="imagenes">
+          <figure class="celular"><img src="06-registro-paso-2.png" alt="Crear mi cuenta: paso 2 de 3 en celular" loading="lazy"><figcaption>Celular</figcaption></figure>
+          
+        </div>
+      </article>
+
+      <article class="tarjeta">
+        <h2><span class="numero">7</span> Crear mi cuenta: paso 3 de 3</h2>
+        <p>La clave y la aceptación de términos y privacidad, en casillas separadas y sin marcar.</p>
+        <div class="imagenes">
+          <figure class="celular"><img src="07-registro-paso-3.png" alt="Crear mi cuenta: paso 3 de 3 en celular" loading="lazy"><figcaption>Celular</figcaption></figure>
+          
+        </div>
+      </article>
+
+      <article class="tarjeta">
+        <h2><span class="numero">8</span> Inicio, recién creada la cuenta</h2>
+        <p>Después de registrarse, entra directo. La pantalla de inicio tiene solo 4 botones grandes y “Más”. Abajo, siempre, “Ayuda por WhatsApp”.</p>
+        <div class="imagenes">
+          <figure class="celular"><img src="08-inicio-bienvenida.png" alt="Inicio, recién creada la cuenta en celular" loading="lazy"><figcaption>Celular</figcaption></figure>
+          
+        </div>
+      </article>
+
+      <article class="tarjeta">
+        <h2><span class="numero">9</span> Negocio de ejemplo (demo)</h2>
+        <p>Con “Probar sin registrarse” se entra al Almacén Don Pepe. La franja amarilla avisa que es un ejemplo. Es solo para mirar: no se puede modificar.</p>
+        <div class="imagenes">
+          <figure class="celular"><img src="09-inicio-demo.png" alt="Negocio de ejemplo (demo) en celular" loading="lazy"><figcaption>Celular</figcaption></figure>
+          
+        </div>
+      </article>
+
+      <article class="tarjeta">
+        <h2><span class="numero">10</span> Secciones que vienen</h2>
+        <p>“Subir boleta”, “Vender”, “Mi stock” y “Avisos” se construyen en las próximas fases. Por ahora muestran este aviso.</p>
+        <div class="imagenes">
+          <figure class="celular"><img src="10-muy-pronto.png" alt="Secciones que vienen en celular" loading="lazy"><figcaption>Celular</figcaption></figure>
+          
+        </div>
+      </article>
+
+      <article class="tarjeta">
+        <h2><span class="numero">11</span> Más</h2>
+        <p>Aquí irán ajustes, pagos, vendedores y exportar. Por ahora: los textos legales y “Cerrar sesión”.</p>
+        <div class="imagenes">
+          <figure class="celular"><img src="11-mas.png" alt="Más en celular" loading="lazy"><figcaption>Celular</figcaption></figure>
+          
+        </div>
+      </article>
+
+      <article class="tarjeta">
+        <h2><span class="numero">12</span> ¿Olvidaste tu clave?</h2>
+        <p>Por ahora se recupera por WhatsApp: tú generas un enlace y se lo mandas a su correo registrado. En la Fase 4 será automático.</p>
+        <div class="imagenes">
+          <figure class="celular"><img src="12-olvide-mi-clave.png" alt="¿Olvidaste tu clave? en celular" loading="lazy"><figcaption>Celular</figcaption></figure>
+          
+        </div>
+      </article>
+
+      <article class="tarjeta">
+        <h2><span class="numero">13</span> Política de privacidad (borrador)</h2>
+        <p>Borrador en lenguaje simple, según la Ley 21.719. Faltan los datos de la SpA (entre corchetes). Debe revisarlo un abogado.</p>
+        <div class="imagenes">
+          <figure class="celular"><img src="13-privacidad.png" alt="Política de privacidad (borrador) en celular" loading="lazy"><figcaption>Celular</figcaption></figure>
+          
+        </div>
+      </article>
+
+      <article class="tarjeta">
+        <h2><span class="numero">14</span> Términos y condiciones (borrador)</h2>
+        <p>Incluye pago por transferencia, recordatorio 3 días antes y modo “solo mirar” a los 10 días de atraso, sin borrar datos.</p>
+        <div class="imagenes">
+          <figure class="celular"><img src="14-terminos.png" alt="Términos y condiciones (borrador) en celular" loading="lazy"><figcaption>Celular</figcaption></figure>
+          
+        </div>
+      </article>
+
+      <article class="tarjeta">
+        <h2><span class="numero">15</span> Panel de administrador</h2>
+        <p>Tu cuenta de administrador ve la lista de negocios y su estado de pago, pero no el detalle de cada negocio. En la Fase 5 se suman pagos y confirmaciones.</p>
+        <div class="imagenes">
+          <figure class="celular"><img src="15-admin.png" alt="Panel de administrador en celular" loading="lazy"><figcaption>Celular</figcaption></figure>
+          <figure class="escritorio"><img src="15-admin-escritorio.png" alt="Panel de administrador en computador" loading="lazy"><figcaption>Computador</figcaption></figure>
+        </div>
+      </article>
+</main>
+<footer>Capturas tomadas automáticamente el 17-11-2026.</footer>
+</body>
+</html>

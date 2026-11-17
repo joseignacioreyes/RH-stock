@@ -1,9 +1,11 @@
-// Portada pública de RH Stock (Fase 0: "Hola mundo" con la marca).
-// En la Fase 1 se suman "Probar sin registrarse", "Crear mi cuenta" y los enlaces legales.
+// Portada pública de RH Stock.
 
-import { BotonWhatsApp } from "@/components/BotonWhatsApp";
+import Link from "next/link";
+import { entrarAlDemo } from "@/app/acciones-sesion";
 import { Logo } from "@/components/marca/Logo";
-import { MENSAJES_WHATSAPP, telefonoLegible } from "@/lib/whatsapp";
+import { Aviso } from "@/components/ui/Aviso";
+import { Boton, BotonEnlace, clasesBoton } from "@/components/ui/Boton";
+import { enlaceWhatsApp, MENSAJES_WHATSAPP } from "@/lib/whatsapp";
 
 const BENEFICIOS = [
   {
@@ -23,34 +25,56 @@ const BENEFICIOS = [
   },
 ] as const;
 
-export default function Portada() {
+export default async function Portada({ searchParams }: PageProps<"/">) {
+  const { demo, sesion } = await searchParams;
+
   return (
     <div className="flex min-h-dvh flex-col bg-fondo-suave">
       <header className="border-b border-black/5 bg-fondo">
-        <div className="mx-auto w-full max-w-xl px-4 py-4">
+        <div className="mx-auto flex w-full max-w-xl items-center justify-between gap-3 px-4 py-3">
           <Logo />
+          <Link
+            href="/entrar"
+            className="flex min-h-12 items-center gap-2 rounded-xl border-2 border-marca px-4 text-lg font-semibold text-marca hover:bg-marca-claro"
+          >
+            <span aria-hidden="true">🔑</span>
+            Entrar
+          </Link>
         </div>
       </header>
 
       <main className="mx-auto w-full max-w-xl flex-1 px-4 pt-8 pb-10">
+        {sesion === "cerrada" && (
+          <div className="mb-6">
+            <Aviso tipo="exito">Listo, cerraste tu sesión.</Aviso>
+          </div>
+        )}
+        {demo === "no-disponible" && (
+          <div className="mb-6">
+            <Aviso tipo="error">El negocio de ejemplo no está disponible en este momento. Escríbenos por WhatsApp y te lo mostramos.</Aviso>
+          </div>
+        )}
+
         <p className="inline-block rounded-full bg-acento px-4 py-1 text-base font-semibold text-texto">
-          Muy pronto en Puente Alto
+          Para almacenes de Puente Alto
         </p>
 
-        <h1 className="mt-4 text-[2.125rem] leading-tight font-bold text-texto sm:text-5xl">
-          Tu inventario con una foto
-        </h1>
+        <h1 className="mt-4 text-[2.125rem] leading-tight font-bold text-texto sm:text-5xl">Tu inventario con una foto</h1>
         <p className="mt-3 text-xl text-texto-suave">
           La app de inventario para <strong className="font-semibold text-texto">almacenes y negocios de barrio</strong>.
           Fácil y desde tu celular.
         </p>
 
-        {/* El botón va arriba para que se vea sin bajar la pantalla en el celular. */}
-        <div className="mt-8">
-          <BotonWhatsApp texto="Quiero probar RH Stock" mensaje={MENSAJES_WHATSAPP.probar} />
-          <p className="mt-3 text-center text-base text-texto-suave">
-            Te respondemos por WhatsApp al <span className="whitespace-nowrap">{telefonoLegible()}</span>
-          </p>
+        {/* Los botones van arriba para que se vean sin bajar la pantalla en el celular. */}
+        <div className="mt-8 space-y-3">
+          <form action={entrarAlDemo}>
+            <Boton type="submit" icono="👀">
+              Probar sin registrarse
+            </Boton>
+          </form>
+          <BotonEnlace href="/registro" variante="secundario" icono="✍️">
+            Crear mi cuenta
+          </BotonEnlace>
         </div>
 
         <h2 className="mt-12 text-2xl font-bold text-texto">Así de fácil</h2>
@@ -70,12 +94,36 @@ export default function Portada() {
             </li>
           ))}
         </ul>
+
+        <section className="mt-12 rounded-2xl bg-fondo p-5 shadow-sm">
+          <h2 className="text-2xl font-bold text-texto">¿Quieres que te ayudemos?</h2>
+          <p className="mt-2 text-lg text-texto-suave">Te visitamos o te explicamos por WhatsApp, sin compromiso.</p>
+          <a
+            href={enlaceWhatsApp(MENSAJES_WHATSAPP.probar)}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={clasesBoton("secundario", "mt-4")}
+          >
+            <span aria-hidden="true" className="text-2xl leading-none">
+              💬
+            </span>
+            Quiero probar RH Stock
+          </a>
+        </section>
       </main>
 
       <footer className="border-t border-black/5 bg-fondo">
-        <p className="mx-auto w-full max-w-xl px-4 py-6 text-center text-base text-texto-suave">
-          RH Stock · Inventario para almacenes de Puente Alto, Chile
-        </p>
+        <div className="mx-auto w-full max-w-xl px-4 py-6 text-center text-base text-texto-suave">
+          <p>RH Stock · Inventario para almacenes de Puente Alto, Chile</p>
+          <p className="mt-3 flex justify-center gap-6">
+            <Link href="/privacidad" className="underline hover:text-marca">
+              Privacidad
+            </Link>
+            <Link href="/terminos" className="underline hover:text-marca">
+              Términos
+            </Link>
+          </p>
+        </div>
       </footer>
     </div>
   );
