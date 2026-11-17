@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="es-CL">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Revisión Fase 0: Preparación | RH Stock</title>
+<style>
+  :root { --marca:#0F766E; --texto:#1F2937; --suave:#4B5563; --fondo:#F3F4F6; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--fondo); color:var(--texto); font:18px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  header { background:var(--marca); color:#fff; padding:24px 16px; }
+  header h1 { margin:0; font-size:28px; }
+  header p { margin:8px 0 0; max-width:720px; }
+  main { max-width:1100px; margin:0 auto; padding:16px; display:grid; gap:24px; }
+  .tarjeta { background:#fff; border-radius:16px; padding:20px; box-shadow:0 1px 3px rgb(0 0 0 / .08); }
+  .tarjeta h2 { margin:0 0 8px; font-size:22px; display:flex; align-items:center; gap:12px; }
+  .numero { display:inline-flex; align-items:center; justify-content:center; width:36px; height:36px; border-radius:50%; background:var(--marca); color:#fff; font-size:18px; flex-shrink:0; }
+  .tarjeta p { margin:0 0 16px; color:var(--suave); }
+  .imagenes { display:flex; flex-wrap:wrap; gap:20px; align-items:flex-start; }
+  figure { margin:0; }
+  figcaption { text-align:center; color:var(--suave); font-size:16px; margin-top:6px; }
+  img { display:block; max-width:100%; height:auto; border:1px solid #E5E7EB; border-radius:12px; }
+  .celular img { width:300px; }
+  .escritorio { flex:1 1 480px; }
+  footer { text-align:center; color:var(--suave); font-size:16px; padding:24px 16px 40px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>RH Stock · Fase 0: Preparación</h1>
+  <p>La portada de RH Stock con el logo, los colores y la letra de la marca. Todavía no se puede iniciar sesión: eso llega en la Fase 1.</p>
+</header>
+<main>
+
+      <article class="tarjeta">
+        <h2><span class="numero">1</span> Portada</h2>
+        <p>Lo primero que ve un almacenero. Debe entender en 5 segundos que es una app de inventario para su almacén. Prueba el botón verde: abre WhatsApp con el mensaje “Hola, quiero probar RH Stock”.</p>
+        <div class="imagenes">
+          <figure class="celular"><img src="01-portada.png" alt="Portada en celular" loading="lazy"><figcaption>Celular</figcaption></figure>
+          <figure class="escritorio"><img src="01-portada-escritorio.png" alt="Portada en computador" loading="lazy"><figcaption>Computador</figcaption></figure>
+        </div>
+      </article>
+
+      <article class="tarjeta">
+        <h2><span class="numero">2</span> Página que no existe</h2>
+        <p>Si alguien abre un enlace equivocado, ve un mensaje amable y un botón para volver al inicio, en vez de un error técnico.</p>
+        <div class="imagenes">
+          <figure class="celular"><img src="02-pagina-no-existe.png" alt="Página que no existe en celular" loading="lazy"><figcaption>Celular</figcaption></figure>
+          
+        </div>
+      </article>
+</main>
+<footer>Capturas tomadas automáticamente el 17-11-2026.</footer>
+</body>
+</html>

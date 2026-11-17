@@ -1,0 +1,64 @@
+@import "tailwindcss";
+
+/*
+ * Colores y fuentes de RH Stock (ver CLAUDE.md, "Logo y colores").
+ * Se usan en las clases de Tailwind así: bg-marca, text-texto-suave, border-falta, font-titulo…
+ */
+@theme {
+  /* Verde principal: botones principales, encabezados y marca. */
+  --color-marca: #0f766e;
+  --color-marca-oscuro: #115e59; /* al apretar o pasar el mouse sobre un botón verde */
+  --color-marca-claro: #ccefe9; /* fondos suaves de la marca (mismo tono de las tapas del ícono) */
+
+  /* Amarillo: SOLO para destacar (alertas "por acabarse", insignias). Nunca texto amarillo sobre blanco. */
+  --color-acento: #fbbf24;
+
+  --color-texto: #1f2937;
+  --color-texto-suave: #4b5563;
+  --color-fondo: #ffffff;
+  --color-fondo-suave: #f3f4f6;
+
+  /* Rojo para "falta" o error. Verde para "al día" u "OK"
+     (#16A34A no tiene contraste suficiente como texto chico sobre blanco: úsalo en íconos, insignias o texto grande). */
+  --color-falta: #dc2626;
+  --color-ok: #16a34a;
+
+  /* Regla de la app: la letra nunca es menor a 16 px. Se quitan los tamaños más chicos de Tailwind. */
+  --text-xs: initial;
+  --text-sm: initial;
+}
+
+@theme inline {
+  /* Las fuentes las carga next/font en src/app/layout.tsx. */
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-titulo: var(--font-poppins), var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+}
+
+@layer base {
+  html {
+    color-scheme: light;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background: var(--color-fondo);
+    color: var(--color-texto);
+    font-family: var(--font-sans);
+    /* Letra base de 18 px. */
+    font-size: 1.125rem;
+    line-height: 1.6;
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-titulo);
+    text-wrap: balance;
+  }
+
+  /* Borde visible al moverse con el teclado, con buen contraste sobre blanco y sobre verde. */
+  :focus-visible {
+    outline: 3px solid var(--color-texto);
+    outline-offset: 3px;
+  }
+}
