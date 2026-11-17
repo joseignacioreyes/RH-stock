@@ -1118,6 +1118,52 @@ const PANTALLAS = {
       },
     ],
   },
+
+  7: {
+    titulo: "Fase 7: Piloto",
+    resumen:
+      "Panel “Uso del piloto” para el administrador: cuánto usa la app cada almacén (boletas, correcciones a lo que leyó la IA, ventas, ventas sin internet, avisos vistos, precios sugeridos usados), con descarga a Excel. Solo números, nunca el detalle del negocio. La guía completa del piloto está en docs/fase-7-piloto.md.",
+    preparar: prepararFase7,
+    pantallas: [
+      {
+        archivo: "01-admin",
+        ruta: "/entrar",
+        titulo: "Panel de administrador",
+        descripcion: "Nuevo botón “Uso del piloto”.",
+        escritorio: true,
+        pasos: async (pagina) => {
+          await entrarComo(pagina, ADMIN_PRUEBA.rut, ADMIN_PRUEBA.clave);
+          await pagina.waitForURL("**/admin");
+        },
+      },
+      {
+        archivo: "02-uso-del-piloto",
+        ruta: "/entrar",
+        titulo: "Uso del piloto",
+        descripcion:
+          "Resumen arriba y una fila por almacén. En rojo, si hubo que corregir más del 20% de lo que leyó la IA. Se elige el período (7 días, 30 días o desde el inicio) y se descarga a Excel cada semana.",
+        escritorio: true,
+        pasos: async (pagina) => {
+          await entrarComo(pagina, ADMIN_PRUEBA.rut, ADMIN_PRUEBA.clave);
+          await pagina.waitForURL("**/admin");
+          await pagina.goto(URL_APP + "/admin/piloto");
+        },
+      },
+      {
+        archivo: "03-excel-del-piloto",
+        ruta: "/entrar",
+        titulo: "Así se ve la descarga del piloto",
+        descripcion: "La misma tabla en Excel, para guardar el avance de cada semana.",
+        pasos: async (pagina) => {
+          await entrarComo(pagina, ADMIN_PRUEBA.rut, ADMIN_PRUEBA.clave);
+          await pagina.waitForURL("**/admin");
+          await pagina.goto(URL_APP + "/admin/piloto");
+          const csv = await descargarTexto(pagina, /Descargar a Excel/);
+          await mostrarComoPlanilla(pagina, csv, 5);
+        },
+      },
+    ],
+  },
 };
 
 // ---------------------------------------------------------------------------
@@ -1420,6 +1466,81 @@ async function mostrarComoPlanilla(pagina, csv, filasMaximas) {
     th{background:#e8f3f1;font-weight:700;text-align:left} tr:nth-child(even) td{background:#fafafa}
     .barra{background:#107c41;color:#fff;padding:8px 12px;font-weight:700}
   </style></head><body><div class="barra">Vista como planilla (Excel)</div><table>${html}</table></body></html>`);
+}
+
+
+/**
+ * Dos almacenes de piloto ficticios con actividad real hecha con sus propias cuentas
+ * (boleta leída y corregida, ventas, una sin internet, pérdidas, avisos vistos, precio sugerido).
+ */
+async function prepararFase7() {
+  await prepararFase1(); // administrador ficticio
+  const admin = clienteAdminLocal();
+  await negocioDePrueba(admin, ROSA, [...PRODUCTOS_ROSA, ["Abarrotes", "Aceite vegetal 1 L", "unidad", 2690, 2350, 8, 4]]);
+  await negocioDePrueba(admin, NUEVO);
+
+  const rosa = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY, { auth: { persistSession: false } });
+  await rosa.auth.signInWithPassword({ email: `${ROSA.rutNormalizado.toLowerCase()}@cuentas.rhstock.cl`, password: ROSA.clave });
+  const { data: productos } = await rosa.from("productos").select("id, nombre, precio_venta");
+  const id = (nombre) => productos.find((p) => p.nombre.startsWith(nombre)).id;
+
+  // Dos boletas leídas por la IA: una casi perfecta y otra con varias correcciones.
+  for (const [leidos, confirmados] of [
+    [
+      [["ARROZ G1 1KG", 10, 1150], ["LECHE ENT 1LT", 12, 880], ["BEB COLA 1.5L", 6, 1450]],
+      [["ARROZ G1 1KG", 10, 1150, "Arroz"], ["LECHE ENT 1LT", 12, 880, "Leche"], ["BEB COLA 1.5L", 6, 1450, "Bebida cola"]],
+    ],
+    [
+      [["ACEITE VEG 1LT", 6, 2550], ["MARRAQUETA KG", 8, 1300], ["HALLULLA KG", 5, 1300], ["BOLSA", 1, 20]],
+      [["ACEITE VEG 1LT", 6, 2550, "Aceite"], ["MARRAQUETA KG", 10, 1300, "Pan marraqueta"], ["HALLULLA KG", 5, 1350, "Pan hallulla"]],
+    ],
+  ]) {
+    const { data: documento } = await rosa.rpc("crear_documento", { p_imagen_url: null });
+    await admin
+      .from("documentos_compra")
+      .update({
+        estado: "por_confirmar",
+        datos_extraidos: { items: leidos.map(([descripcion, cantidad, precioUnitario]) => ({ descripcion, cantidad, precioUnitario, total: cantidad * precioUnitario })) },
+      })
+      .eq("id", documento);
+    const { error } = await rosa.rpc("confirmar_documento", {
+      p_documento_id: documento,
+      p_datos: {
+        tipo: "boleta",
+        fecha: new Date().toISOString().slice(0, 10),
+        proveedor_nombre: "Mayorista del Sur",
+        items: confirmados.map(([descripcion, cantidad, precio, producto]) => ({
+          descripcion,
+          cantidad,
+          precio_unitario: precio,
+          total: cantidad * precio,
+          producto_id: id(producto),
+          nuevo: null,
+        })),
+      },
+    });
+    if (error) throw error;
+  }
+  // La primera boleta tenía foto (cuenta como "subida").
+  await admin.from("documentos_compra").update({ imagen_url: "ejemplo.jpg" }).eq("empresa_id", (await rosa.rpc("mi_empresa_id")).data);
+
+  // Ventas: 12 en la semana, 3 hechas sin internet (llegaron tarde).
+  for (let i = 0; i < 12; i++) {
+    const fecha = new Date(Date.now() - (i % 6) * 86_400_000 - (i < 3 ? 15 * 60_000 : 0));
+    await rosa.rpc("registrar_venta", {
+      p_venta: {
+        id_local: crypto.randomUUID(),
+        vendedor_id: null,
+        fecha: fecha.toISOString(),
+        medio_pago: i % 3 ? "efectivo" : "debito",
+        items: [{ producto_id: id("Bebida cola"), cantidad: 1, precio_unitario: 1990 }],
+      },
+    });
+  }
+  await rosa.rpc("registrar_salida", { p_producto_id: id("Pan marraqueta"), p_cantidad: 1.5, p_motivo: "merma" });
+  await rosa.rpc("registrar_conteo", { p_conteos: [{ producto_id: id("Pan hallulla"), cantidad_real: 9 }] });
+  await rosa.from("alertas").update({ leida: true }).eq("tipo", "costo_sube");
+  await rosa.rpc("registrar_evento", { p_evento: "precio_sugerido_usado" });
 }
 
 const escaparHtml = (texto) =>

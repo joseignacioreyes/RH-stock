@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { cerrarSesion } from "@/app/acciones-sesion";
 import { Logo } from "@/components/marca/Logo";
 import { formatearRut } from "@/lib/rut";
@@ -48,6 +49,12 @@ export default async function PaginaAdmin() {
       <main className="mx-auto max-w-5xl px-4 py-6">
         <p className="text-lg font-semibold text-marca">Panel de administrador</p>
         <h1 className="text-3xl font-bold text-texto">Hola, {primerNombre(usuario.nombre)}</h1>
+        <Link
+          href="/admin/piloto"
+          className="mt-4 inline-flex min-h-12 items-center gap-2 rounded-xl bg-marca px-4 text-lg font-semibold text-white hover:bg-marca-oscuro"
+        >
+          <span aria-hidden="true">📈</span> Uso del piloto
+        </Link>
 
         <div className="mt-6 grid gap-4 sm:grid-cols-3">
           <Tarjeta titulo="Negocios registrados" valor={clientes.length} />

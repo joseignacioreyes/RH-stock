@@ -26,14 +26,14 @@ export type Database = {
           Tables: {
             "alertas": {
                   Row: {
-                    "created_at": string,"datos": NonNullable<Json>,"empresa_id": string,"enviada_correo": boolean,"enviada_push": boolean,"id": string,"leida": boolean,"mensaje": string,"producto_id": string | null,"tipo": string,"updated_at": string
+                    "created_at": string,"datos": NonNullable<Json>,"empresa_id": string,"enviada_correo": boolean,"enviada_push": boolean,"id": string,"leida": boolean,"mensaje": string,"producto_id": string | null,"tipo": string,"updated_at": string,"vista_en": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "created_at"?: string,"datos"?: NonNullable<Json>,"empresa_id": string,"enviada_correo"?: boolean,"enviada_push"?: boolean,"id"?: string,"leida"?: boolean,"mensaje": string,"producto_id"?: string | null,"tipo": string,"updated_at"?: string
+                    "created_at"?: string,"datos"?: NonNullable<Json>,"empresa_id": string,"enviada_correo"?: boolean,"enviada_push"?: boolean,"id"?: string,"leida"?: boolean,"mensaje": string,"producto_id"?: string | null,"tipo": string,"updated_at"?: string,"vista_en"?: string | null
                   }
                   Update: {
-                    "created_at"?: string,"datos"?: NonNullable<Json>,"empresa_id"?: string,"enviada_correo"?: boolean,"enviada_push"?: boolean,"id"?: string,"leida"?: boolean,"mensaje"?: string,"producto_id"?: string | null,"tipo"?: string,"updated_at"?: string
+                    "created_at"?: string,"datos"?: NonNullable<Json>,"empresa_id"?: string,"enviada_correo"?: boolean,"enviada_push"?: boolean,"id"?: string,"leida"?: boolean,"mensaje"?: string,"producto_id"?: string | null,"tipo"?: string,"updated_at"?: string,"vista_en"?: string | null
                   }
                   Relationships: [
                     {
@@ -156,14 +156,14 @@ isOneToOne: false
                   ]
                 },"documentos_compra": {
                   Row: {
-                    "confirmado_en": string | null,"confirmado_por": string | null,"created_at": string,"datos_extraidos": Json | null,"empresa_id": string,"estado": string,"fecha": string | null,"id": string,"imagen_url": string | null,"iva": number | null,"neto": number | null,"numero": string | null,"proveedor_id": string | null,"tipo": string,"total": number | null,"updated_at": string,"usuario_id": string | null
+                    "confirmado_en": string | null,"confirmado_por": string | null,"created_at": string,"datos_extraidos": Json | null,"empresa_id": string,"estado": string,"fecha": string | null,"id": string,"imagen_url": string | null,"items_corregidos": number | null,"items_leidos": number | null,"iva": number | null,"neto": number | null,"numero": string | null,"proveedor_id": string | null,"tipo": string,"total": number | null,"updated_at": string,"usuario_id": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "confirmado_en"?: string | null,"confirmado_por"?: string | null,"created_at"?: string,"datos_extraidos"?: Json | null,"empresa_id": string,"estado"?: string,"fecha"?: string | null,"id"?: string,"imagen_url"?: string | null,"iva"?: number | null,"neto"?: number | null,"numero"?: string | null,"proveedor_id"?: string | null,"tipo"?: string,"total"?: number | null,"updated_at"?: string,"usuario_id"?: string | null
+                    "confirmado_en"?: string | null,"confirmado_por"?: string | null,"created_at"?: string,"datos_extraidos"?: Json | null,"empresa_id": string,"estado"?: string,"fecha"?: string | null,"id"?: string,"imagen_url"?: string | null,"items_corregidos"?: number | null,"items_leidos"?: number | null,"iva"?: number | null,"neto"?: number | null,"numero"?: string | null,"proveedor_id"?: string | null,"tipo"?: string,"total"?: number | null,"updated_at"?: string,"usuario_id"?: string | null
                   }
                   Update: {
-                    "confirmado_en"?: string | null,"confirmado_por"?: string | null,"created_at"?: string,"datos_extraidos"?: Json | null,"empresa_id"?: string,"estado"?: string,"fecha"?: string | null,"id"?: string,"imagen_url"?: string | null,"iva"?: number | null,"neto"?: number | null,"numero"?: string | null,"proveedor_id"?: string | null,"tipo"?: string,"total"?: number | null,"updated_at"?: string,"usuario_id"?: string | null
+                    "confirmado_en"?: string | null,"confirmado_por"?: string | null,"created_at"?: string,"datos_extraidos"?: Json | null,"empresa_id"?: string,"estado"?: string,"fecha"?: string | null,"id"?: string,"imagen_url"?: string | null,"items_corregidos"?: number | null,"items_leidos"?: number | null,"iva"?: number | null,"neto"?: number | null,"numero"?: string | null,"proveedor_id"?: string | null,"tipo"?: string,"total"?: number | null,"updated_at"?: string,"usuario_id"?: string | null
                   }
                   Relationships: [
                     {
@@ -205,6 +205,26 @@ isOneToOne: false
                   }
                   Relationships: [
                     
+                  ]
+                },"eventos_uso": {
+                  Row: {
+                    "created_at": string,"empresa_id": string,"evento": string,"id": string,"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"empresa_id": string,"evento": string,"id"?: string,"updated_at"?: string
+                  }
+                  Update: {
+                    "created_at"?: string,"empresa_id"?: string,"evento"?: string,"id"?: string,"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "eventos_uso_empresa_id_fkey"
+      columns: ["empresa_id"]
+isOneToOne: false
+      referencedRelation: "empresas"
+      referencedColumns: ["id"]
+    }
                   ]
                 },"items_documento": {
                   Row: {
@@ -495,6 +515,11 @@ isOneToOne: false
               "producto_id": string,"veces": number
             }[]
                            },
+"metricas_uso":
+{ Args: { "p_desde": string }; Returns: {
+              "avisos_costo": number,"avisos_stock": number,"avisos_vistos": number,"boletas_a_mano": number,"boletas_confirmadas": number,"boletas_subidas": number,"comuna": string,"conteos": number,"creada_en": string,"dias_activos": number,"empresa_id": string,"items_corregidos": number,"items_leidos": number,"monto_vendido": number,"negocio": string,"perdidas": number,"precios_sugeridos_usados": number,"productos_creados": number,"ultima_actividad": string,"vendedores_activos": number,"ventas": number,"ventas_sin_internet": number
+            }[]
+                           },
 "mi_empresa_id":
 { Args: Record<PropertyKey, never>; Returns: string
                            },
@@ -518,6 +543,9 @@ isOneToOne: false
                            },
 "registrar_conteo":
 { Args: { "p_conteos": Json }; Returns: number
+                           },
+"registrar_evento":
+{ Args: { "p_evento": string }; Returns: undefined
                            },
 "registrar_negocio":
 { Args: { "p_comuna": string,"p_correo": string,"p_ip": string,"p_nombre": string,"p_nombre_negocio": string,"p_rut_empresa": string,"p_rut_usuario": string,"p_usuario_id": string,"p_version_legal": string }; Returns: string

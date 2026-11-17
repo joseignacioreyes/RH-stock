@@ -157,6 +157,7 @@ export async function usarPrecioSugerido(productoId: string, precio: number): Pr
   const supabase = await crearClienteServidor();
   const { error } = await supabase.from("productos").update({ precio_venta: precio }).eq("id", productoId);
   if (error) redirect(`/mi-stock/productos/${productoId}?error=general`);
+  await supabase.rpc("registrar_evento", { p_evento: "precio_sugerido_usado" }); // métrica del piloto
   revalidatePath("/", "layout");
   redirect(`/mi-stock/productos/${productoId}?listo=precio`);
 }
