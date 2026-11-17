@@ -134,6 +134,20 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"configuracion_cobro": {
+                  Row: {
+                    "created_at": string,"dias_aviso": number,"dias_gracia": number,"id": boolean,"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"dias_aviso"?: number,"dias_gracia"?: number,"id"?: boolean,"updated_at"?: string
+                  }
+                  Update: {
+                    "created_at"?: string,"dias_aviso"?: number,"dias_gracia"?: number,"id"?: boolean,"updated_at"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"consentimientos": {
                   Row: {
                     "aceptado": boolean,"created_at": string,"fecha": string,"id": string,"ip": string | null,"tipo": string,"updated_at": string,"usuario_id": string,"version": string
@@ -194,14 +208,14 @@ isOneToOne: false
                   ]
                 },"empresas": {
                   Row: {
-                    "comuna": string,"creada_en": string,"created_at": string,"dia_pago": number,"es_demo": boolean,"estado_suscripcion": string,"id": string,"nombre_fantasia": string,"plan": string,"razon_social": string | null,"rut": string,"umbral_aviso_costo": number,"updated_at": string
+                    "comuna": string,"creada_en": string,"created_at": string,"dia_pago": number,"es_demo": boolean,"estado_suscripcion": string,"id": string,"nombre_fantasia": string,"plan": string,"precio_mensual": number,"proximo_vencimiento": string | null,"razon_social": string | null,"rut": string,"umbral_aviso_costo": number,"updated_at": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "comuna"?: string,"creada_en"?: string,"created_at"?: string,"dia_pago"?: number,"es_demo"?: boolean,"estado_suscripcion"?: string,"id"?: string,"nombre_fantasia": string,"plan"?: string,"razon_social"?: string | null,"rut": string,"umbral_aviso_costo"?: number,"updated_at"?: string
+                    "comuna"?: string,"creada_en"?: string,"created_at"?: string,"dia_pago"?: number,"es_demo"?: boolean,"estado_suscripcion"?: string,"id"?: string,"nombre_fantasia": string,"plan"?: string,"precio_mensual"?: number,"proximo_vencimiento"?: string | null,"razon_social"?: string | null,"rut": string,"umbral_aviso_costo"?: number,"updated_at"?: string
                   }
                   Update: {
-                    "comuna"?: string,"creada_en"?: string,"created_at"?: string,"dia_pago"?: number,"es_demo"?: boolean,"estado_suscripcion"?: string,"id"?: string,"nombre_fantasia"?: string,"plan"?: string,"razon_social"?: string | null,"rut"?: string,"umbral_aviso_costo"?: number,"updated_at"?: string
+                    "comuna"?: string,"creada_en"?: string,"created_at"?: string,"dia_pago"?: number,"es_demo"?: boolean,"estado_suscripcion"?: string,"id"?: string,"nombre_fantasia"?: string,"plan"?: string,"precio_mensual"?: number,"proximo_vencimiento"?: string | null,"razon_social"?: string | null,"rut"?: string,"umbral_aviso_costo"?: number,"updated_at"?: string
                   }
                   Relationships: [
                     
@@ -317,6 +331,38 @@ isOneToOne: false
     },{
       foreignKeyName: "movimientos_stock_usuario_id_fkey"
       columns: ["usuario_id"]
+isOneToOne: false
+      referencedRelation: "usuarios"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"pagos": {
+                  Row: {
+                    "comprobante_url": string | null,"confirmado_por": string | null,"created_at": string,"datos_extraidos": Json | null,"empresa_id": string | null,"estado": string,"fecha_confirmacion": string | null,"id": string,"informado_en": string | null,"informado_por": string | null,"monto": number,"motivo_rechazo": string | null,"nombre_negocio": string,"periodo": string,"rut_empresa": string,"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "comprobante_url"?: string | null,"confirmado_por"?: string | null,"created_at"?: string,"datos_extraidos"?: Json | null,"empresa_id"?: string | null,"estado"?: string,"fecha_confirmacion"?: string | null,"id"?: string,"informado_en"?: string | null,"informado_por"?: string | null,"monto": number,"motivo_rechazo"?: string | null,"nombre_negocio": string,"periodo": string,"rut_empresa": string,"updated_at"?: string
+                  }
+                  Update: {
+                    "comprobante_url"?: string | null,"confirmado_por"?: string | null,"created_at"?: string,"datos_extraidos"?: Json | null,"empresa_id"?: string | null,"estado"?: string,"fecha_confirmacion"?: string | null,"id"?: string,"informado_en"?: string | null,"informado_por"?: string | null,"monto"?: number,"motivo_rechazo"?: string | null,"nombre_negocio"?: string,"periodo"?: string,"rut_empresa"?: string,"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "pagos_confirmado_por_fkey"
+      columns: ["confirmado_por"]
+isOneToOne: false
+      referencedRelation: "usuarios"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "pagos_empresa_id_fkey"
+      columns: ["empresa_id"]
+isOneToOne: false
+      referencedRelation: "empresas"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "pagos_informado_por_fkey"
+      columns: ["informado_por"]
 isOneToOne: false
       referencedRelation: "usuarios"
       referencedColumns: ["id"]
@@ -472,17 +518,37 @@ isOneToOne: false
             [_ in never]: never
           }
           Functions: {
-            "agregar_vendedor":
+            "actualizar_suscripciones":
+{ Args: Record<PropertyKey, never>; Returns: Json
+                           },
+"admin_configurar_cobro":
+{ Args: { "p_empresa_id": string,"p_plan": string,"p_precio": number,"p_primer_vencimiento": string }; Returns: undefined
+                           },
+"admin_negocios":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "comuna": string,"creada_en": string,"dia_pago": number,"es_demo": boolean,"estado": string,"id": string,"nombre_fantasia": string,"pago_en_revision": boolean,"plan": string,"precio_mensual": number,"proximo_vencimiento": string,"rut": string
+            }[]
+                           },
+"agregar_vendedor":
 { Args: { "p_nombre": string,"p_pin": string }; Returns: string
+                           },
+"avisar_pago":
+{ Args: { "p_clave": string,"p_empresa_id": string,"p_mensaje": string,"p_periodo": string }; Returns: undefined
                            },
 "cancelar_eliminacion":
 { Args: Record<PropertyKey, never>; Returns: undefined
+                           },
+"cerrar_avisos_de_pago":
+{ Args: { "p_empresa_id": string,"p_periodo": string }; Returns: undefined
                            },
 "cerrar_caja":
 { Args: { "p_efectivo_contado": number,"p_fecha": string }; Returns: string
                            },
 "confirmar_documento":
 { Args: { "p_datos": Json,"p_documento_id": string }; Returns: number
+                           },
+"confirmar_pago":
+{ Args: { "p_pago_id": string }; Returns: undefined
                            },
 "costo_promedio_ponderado":
 { Args: { "p_cantidad": number,"p_costo_anterior": number,"p_costo_nuevo": number,"p_stock_anterior": number }; Returns: number
@@ -510,6 +576,21 @@ isOneToOne: false
 "es_admin":
 { Args: Record<PropertyKey, never>; Returns: boolean
                            },
+"estado_suscripcion_de":
+{ Args: { "p_empresa_id": string }; Returns: string
+                           },
+"exigir_admin":
+{ Args: Record<PropertyKey, never>; Returns: undefined
+                           },
+"fecha_texto":
+{ Args: { "p_fecha": string }; Returns: string
+                           },
+"hoy_chile":
+{ Args: Record<PropertyKey, never>; Returns: string
+                           },
+"informar_pago":
+{ Args: { "p_comprobante_url": string }; Returns: string
+                           },
 "mas_vendidos":
 { Args: { "p_limite"?: number }; Returns: {
               "producto_id": string,"veces": number
@@ -526,6 +607,14 @@ isOneToOne: false
 "mi_rol":
 { Args: Record<PropertyKey, never>; Returns: string
                            },
+"mi_suscripcion":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "dia_pago": number,"estado": string,"pago_en_revision": boolean,"periodo": string,"plan": string,"precio_mensual": number,"proximo_vencimiento": string,"solo_lectura_desde": string
+            }[]
+                           },
+"nombre_periodo":
+{ Args: { "p_periodo": string }; Returns: string
+                           },
 "normalizar_descripcion":
 { Args: { "p_texto": string }; Returns: string
                            },
@@ -540,6 +629,12 @@ isOneToOne: false
                            },
 "puedo_modificar":
 { Args: { "p_empresa_id": string }; Returns: boolean
+                           },
+"rechazar_pago":
+{ Args: { "p_motivo": string,"p_pago_id": string }; Returns: undefined
+                           },
+"refrescar_estado_suscripcion":
+{ Args: { "p_empresa_id": string }; Returns: undefined
                            },
 "registrar_conteo":
 { Args: { "p_conteos": Json }; Returns: number
@@ -558,6 +653,9 @@ isOneToOne: false
                            },
 "solicitar_eliminacion":
 { Args: Record<PropertyKey, never>; Returns: string
+                           },
+"soy_dueno_de_negocio_real":
+{ Args: Record<PropertyKey, never>; Returns: boolean
                            },
 "verificar_pin":
 { Args: { "p_pin": string,"p_vendedor_id": string }; Returns: string

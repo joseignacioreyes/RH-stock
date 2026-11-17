@@ -3,7 +3,7 @@ import { cache } from "react";
 import type { Unidad } from "./formato";
 import { crearClienteServidor } from "./supabase/servidor";
 
-export type TipoAviso = "stock_bajo" | "costo_sube" | "costo_baja";
+export type TipoAviso = "stock_bajo" | "costo_sube" | "costo_baja" | "pago";
 
 export type Aviso = {
   id: string;

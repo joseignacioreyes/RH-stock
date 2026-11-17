@@ -42,6 +42,9 @@ export async function enviarVenta(venta: VentaPendiente): Promise<ResultadoEnvio
   // Errores de red o de sesión vencida no traen código de Postgres: se reintenta (nunca se pierde la venta).
   const codigo = error.code ?? "";
   if (!codigo || codigo.startsWith("PGRST3") || /fetch|network|jwt/i.test(error.message)) return "sin_conexion";
+  // Sin permiso (por ejemplo, la cuenta quedó solo para mirar por un pago atrasado): la venta ya se hizo en el
+  // mostrador, así que no se bota. Queda guardada en el celular y se envía cuando se confirme el pago.
+  if (codigo === "42501") return "sin_conexion";
   console.error("La venta fue rechazada:", error);
   return "rechazada";
 }

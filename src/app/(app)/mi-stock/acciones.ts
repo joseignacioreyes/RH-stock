@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { erroresPorCampo, primerError } from "@/lib/cuentas";
 import { esquemaProductoEditar, esquemaProductoNuevo, esquemaSalida } from "@/lib/esquemas-productos";
-import { exigirSesionDeNegocio } from "@/lib/sesion";
+import { exigirSesionDeNegocio, MENSAJE_SUSPENDIDA } from "@/lib/sesion";
 import { crearClienteServidor } from "@/lib/supabase/servidor";
 
 export type EstadoFormulario = { error?: string; errores?: Record<string, string>; paso?: number };
@@ -33,6 +33,7 @@ const esCodigoRepetido = (error: { code?: string; message?: string } | null) =>
 
 export async function crearProducto(_estado: EstadoFormulario, formData: FormData): Promise<EstadoFormulario> {
   const { empresa } = await exigirSesionDeNegocio();
+  if (empresa.suspendida) return { error: MENSAJE_SUSPENDIDA };
   if (empresa.esDemo) return { error: EN_DEMO };
 
   const validacion = esquemaProductoNuevo.safeParse(Object.fromEntries(formData));
@@ -64,6 +65,7 @@ export async function crearProducto(_estado: EstadoFormulario, formData: FormDat
 
 export async function editarProducto(productoId: string, _estado: EstadoFormulario, formData: FormData): Promise<EstadoFormulario> {
   const { empresa } = await exigirSesionDeNegocio();
+  if (empresa.suspendida) return { error: MENSAJE_SUSPENDIDA };
   if (empresa.esDemo) return { error: EN_DEMO };
 
   const validacion = esquemaProductoEditar.safeParse(Object.fromEntries(formData));
@@ -97,6 +99,7 @@ export async function editarProducto(productoId: string, _estado: EstadoFormular
 
 export async function quitarProducto(productoId: string): Promise<void> {
   const { empresa } = await exigirSesionDeNegocio();
+  if (empresa.suspendida) redirect("/mas/mi-plan?pausada=1");
   if (empresa.esDemo) redirect(`/mi-stock/productos/${productoId}?error=demo`);
 
   const supabase = await crearClienteServidor();
@@ -111,6 +114,7 @@ export async function quitarProducto(productoId: string): Promise<void> {
 
 export async function registrarSalida(productoId: string, _estado: EstadoFormulario, formData: FormData): Promise<EstadoFormulario> {
   const { empresa } = await exigirSesionDeNegocio();
+  if (empresa.suspendida) return { error: MENSAJE_SUSPENDIDA };
   if (empresa.esDemo) return { error: EN_DEMO };
 
   const validacion = esquemaSalida.safeParse(Object.fromEntries(formData));
@@ -133,6 +137,7 @@ export async function registrarSalida(productoId: string, _estado: EstadoFormula
 
 export async function guardarConteo(conteos: { productoId: string; cantidadReal: number }[]): Promise<{ error?: string }> {
   const { empresa } = await exigirSesionDeNegocio();
+  if (empresa.suspendida) return { error: MENSAJE_SUSPENDIDA };
   if (empresa.esDemo) return { error: EN_DEMO };
   if (conteos.some((c) => !Number.isFinite(c.cantidadReal) || c.cantidadReal < 0)) return { error: "Hay una cantidad que no se entiende. Revísala." };
 
@@ -152,6 +157,7 @@ export async function guardarConteo(conteos: { productoId: string; cantidadReal:
 /** "Usar este precio": cambia el precio de venta al sugerido. */
 export async function usarPrecioSugerido(productoId: string, precio: number): Promise<void> {
   const { empresa, usuario } = await exigirSesionDeNegocio();
+  if (empresa.suspendida) redirect("/mas/mi-plan?pausada=1");
   if (empresa.esDemo || usuario.rol !== "dueno") redirect(`/mi-stock/productos/${productoId}?error=demo`);
   if (!Number.isInteger(precio) || precio <= 0) redirect(`/mi-stock/productos/${productoId}?error=general`);
   const supabase = await crearClienteServidor();

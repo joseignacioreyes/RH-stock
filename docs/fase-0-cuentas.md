@@ -74,10 +74,21 @@ Desde ese momento, **cada vez que yo suba cambios, Vercel crea solo un link de p
 2. El plan gratis permite 3.000 correos al mes (100 al día), suficiente para partir.
 3. Lo conectamos con `rhstock.cl` en la Fase 4. Si usas los servidores DNS de Vercel (paso 2), los datos que pide Resend se agregan en Vercel → **Domains → rhstock.cl → DNS Records**. Te guiaré en ese momento.
 
+## 6. Cuenta bancaria de la SpA (antes de cobrar, Fase 5)
+
+Los clientes transfieren la suscripción a esta cuenta. Sus datos **no son secretos** (son los que le das a cualquier cliente), pero igual van en Vercel y no en el código, para cambiarlos en un solo lugar:
+
+1. En Vercel → tu proyecto → **Settings → Environment Variables**, agrega:
+   `TRANSFERENCIA_BANCO`, `TRANSFERENCIA_TIPO_CUENTA`, `TRANSFERENCIA_NUMERO`, `TRANSFERENCIA_TITULAR`, `TRANSFERENCIA_RUT` y `TRANSFERENCIA_CORREO`.
+2. Vuelve a publicar (Vercel → **Deployments → Redeploy**).
+3. Mientras falte alguno, la pantalla "Mi plan" no muestra ninguna cuenta: ofrece pedir los datos por WhatsApp.
+
+Los almacenes parten en el **piloto gratis**. Cuando quieras empezar a cobrarle a uno: Panel de administrador → toca el negocio → **Mensual**, precio y fecha del primer pago → **Guardar plan**.
+
 ---
 
 ## Qué me tienes que avisar
 
 - [ ] "Tengo la cuenta de Vercel" (y si elegiste Pro o Hobby).
 - [ ] "Compré rhstock.cl" (o si no estaba disponible, para elegir otro nombre).
-- [ ] Más adelante: "Tengo Supabase", "Tengo la API de Claude", "Tengo Resend".
+- [ ] Más adelante: "Tengo Supabase", "Tengo la API de Claude", "Tengo Resend", "Tengo la cuenta de la SpA".

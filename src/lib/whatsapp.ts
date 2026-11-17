@@ -4,6 +4,7 @@ import { WHATSAPP_SOPORTE } from "./config";
 export const MENSAJES_WHATSAPP = {
   ayuda: "Hola, necesito ayuda con RH Stock",
   probar: "Hola, quiero probar RH Stock",
+  datosPago: "Hola, quiero pagar RH Stock. ¿Me envías los datos para transferir?",
 } as const;
 
 /** Arma el enlace que abre un chat de WhatsApp con el mensaje ya escrito. */

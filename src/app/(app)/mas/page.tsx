@@ -28,10 +28,12 @@ export default async function PaginaMas({ searchParams }: PageProps<"/mas">) {
         </p>
       </div>
 
-      {/* Ajustes, pagos, vendedores y exportar se suman aquí en las próximas fases. */}
       <nav aria-label="Otras opciones" className="mt-6 space-y-3">
         {esDueno && (
           <>
+            <BotonEnlace href="/mas/mi-plan" variante="suave" icono="💳">
+              Mi plan y pagos
+            </BotonEnlace>
             <BotonEnlace href="/mas/vendedores" variante="suave" icono="🧑">
               Vendedores
             </BotonEnlace>

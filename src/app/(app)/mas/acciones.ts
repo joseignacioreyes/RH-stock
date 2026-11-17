@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { leerNumero } from "@/lib/formato";
-import { exigirSesionDeNegocio } from "@/lib/sesion";
+import { exigirSesionDeNegocio, MENSAJE_SUSPENDIDA } from "@/lib/sesion";
 import { crearClienteServidor } from "@/lib/supabase/servidor";
 
 export type EstadoAjuste = { error?: string };
@@ -17,6 +17,7 @@ async function exigirDueno() {
 
 export async function guardarMargen(categoriaId: string, _estado: EstadoAjuste, formData: FormData): Promise<EstadoAjuste> {
   const { empresa } = await exigirDueno();
+  if (empresa.suspendida) return { error: MENSAJE_SUSPENDIDA };
   if (empresa.esDemo) return { error: EN_DEMO };
   const margen = leerNumero(String(formData.get("margen") ?? "").replace("%", ""));
   if (margen === null || margen < 1 || margen > 90) return { error: "Escribe un porcentaje entre 1 y 90, por ejemplo 25." };
@@ -30,6 +31,7 @@ export async function guardarMargen(categoriaId: string, _estado: EstadoAjuste, 
 
 export async function guardarUmbral(_estado: EstadoAjuste, formData: FormData): Promise<EstadoAjuste> {
   const { empresa } = await exigirDueno();
+  if (empresa.suspendida) return { error: MENSAJE_SUSPENDIDA };
   if (empresa.esDemo) return { error: EN_DEMO };
   const umbral = leerNumero(String(formData.get("umbral") ?? "").replace("%", ""));
   if (umbral === null || umbral < 1 || umbral > 50) return { error: "Escribe un porcentaje entre 1 y 50, por ejemplo 5." };

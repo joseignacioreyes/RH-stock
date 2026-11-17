@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import type { ProductoCaja } from "@/lib/caja/carrito";
 import { obtenerProductos } from "@/lib/productos";
+import { AvisoSoloLectura } from "@/components/FranjaPago";
+import { Pantalla } from "@/components/ui/Pantalla";
 import { exigirSesionDeNegocio } from "@/lib/sesion";
 import { crearClienteServidor } from "@/lib/supabase/servidor";
 import { Caja } from "./Caja";
@@ -9,6 +11,14 @@ export const metadata: Metadata = { title: "Vender" };
 
 export default async function PaginaVender() {
   const sesion = await exigirSesionDeNegocio();
+  if (sesion.empresa.suspendida) {
+    // Las ventas que hayan quedado guardadas en el celular esperan ahí y se envían cuando se confirme el pago.
+    return (
+      <Pantalla titulo="Vender" volverA="/inicio">
+        <AvisoSoloLectura esDueno={sesion.usuario.rol === "dueno"} />
+      </Pantalla>
+    );
+  }
   const supabase = await crearClienteServidor();
   const [productos, { data: masVendidos }, { data: vendedores }] = await Promise.all([
     obtenerProductos(sesion),

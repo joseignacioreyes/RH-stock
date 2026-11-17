@@ -6,7 +6,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { leerBoleta, type ImagenBoleta } from "@/lib/lector-boletas/leer";
 import { MENSAJES_PROBLEMA } from "@/lib/lector-boletas/esquema";
-import { exigirSesionDeNegocio } from "@/lib/sesion";
+import { exigirSesionDeNegocio, MENSAJE_SUSPENDIDA } from "@/lib/sesion";
 import { crearClienteAdmin } from "@/lib/supabase/admin";
 import { crearClienteServidor } from "@/lib/supabase/servidor";
 
@@ -19,6 +19,7 @@ const MAXIMO_BYTES = 4 * 1024 * 1024;
 /** Sube la foto, la lee con la IA y lleva a la pantalla de revisión. */
 export async function subirBoleta(_estado: EstadoSubida, formData: FormData): Promise<EstadoSubida> {
   const { empresa } = await exigirSesionDeNegocio();
+  if (empresa.suspendida) return { error: MENSAJE_SUSPENDIDA };
   if (empresa.esDemo) return { error: EN_DEMO };
 
   const foto = formData.get("foto");
@@ -71,6 +72,7 @@ export async function subirBoleta(_estado: EstadoSubida, formData: FormData): Pr
 /** Ingresar una boleta a mano, sin foto (por ejemplo, si la IA no pudo leerla). */
 export async function ingresarAMano(): Promise<void> {
   const { empresa } = await exigirSesionDeNegocio();
+  if (empresa.suspendida) redirect("/mas/mi-plan?pausada=1");
   if (empresa.esDemo) redirect("/subir-boleta?error=demo");
   const supabase = await crearClienteServidor();
   const { data: documentoId, error } = await supabase.rpc("crear_documento", { p_imagen_url: null as unknown as string });
@@ -112,6 +114,7 @@ export type DatosConfirmacion = z.infer<typeof esquemaConfirmacion>;
 
 export async function confirmarBoleta(documentoId: string, datos: DatosConfirmacion): Promise<{ error?: string }> {
   const { empresa } = await exigirSesionDeNegocio();
+  if (empresa.suspendida) return { error: MENSAJE_SUSPENDIDA };
   if (empresa.esDemo) {
     return { error: "Este es un negocio de ejemplo: puedes revisar la boleta, pero no se guardan cambios. Crea tu cuenta para usarlo de verdad." };
   }
@@ -135,6 +138,7 @@ export async function confirmarBoleta(documentoId: string, datos: DatosConfirmac
 
 export async function descartarBoleta(documentoId: string): Promise<void> {
   const { empresa } = await exigirSesionDeNegocio();
+  if (empresa.suspendida) redirect("/mas/mi-plan?pausada=1");
   if (empresa.esDemo) redirect(`/subir-boleta/${documentoId}?error=demo`);
   const supabase = await crearClienteServidor();
   const { data: ruta, error } = await supabase.rpc("descartar_documento", { p_documento_id: documentoId });

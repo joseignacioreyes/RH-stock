@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Aviso } from "@/components/ui/Aviso";
 import { contarAvisosSinLeer } from "@/lib/avisos";
+import { formatearDia, formatearPesos } from "@/lib/formato";
 import { exigirSesionDeNegocio, primerNombre } from "@/lib/sesion";
 
 export const metadata: Metadata = { title: "Inicio" };
@@ -33,6 +34,23 @@ export default async function PaginaInicio({ searchParams }: PageProps<"/inicio"
         <div className="mt-5">
           <Aviso tipo="exito">Listo, tu clave nueva quedó guardada.</Aviso>
         </div>
+      )}
+
+      {usuario.rol === "dueno" && empresa.suscripcion.estado === "por_vencer" && !empresa.suscripcion.pagoEnRevision && empresa.suscripcion.proximoVencimiento && (
+        <Link
+          href="/mas/mi-plan"
+          className="mt-5 flex items-center gap-4 rounded-2xl border-l-8 border-acento bg-fondo p-4 shadow-sm hover:bg-marca-claro"
+        >
+          <span aria-hidden="true" className="text-4xl leading-none">
+            💳
+          </span>
+          <span className="flex-1">
+            <span className="block text-lg font-semibold text-texto">
+              Tu pago de {formatearPesos(empresa.suscripcion.precioMensual)} vence el {formatearDia(empresa.suscripcion.proximoVencimiento)}
+            </span>
+            <span className="block text-base font-semibold text-marca">Ver cómo pagar →</span>
+          </span>
+        </Link>
       )}
 
       <nav aria-label="Tareas principales" className="mt-6 grid grid-cols-2 gap-4">

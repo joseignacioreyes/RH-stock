@@ -14,6 +14,7 @@ const ESTILO: Record<TipoAviso, { icono: string; borde: string; boton: string }>
   stock_bajo: { icono: "🔴", borde: "border-falta", boton: "Ver producto" },
   costo_sube: { icono: "📈", borde: "border-acento", boton: "Ver precio sugerido" },
   costo_baja: { icono: "📉", borde: "border-ok", boton: "Ver producto" },
+  pago: { icono: "💳", borde: "border-marca", boton: "Ver mi plan" },
 };
 
 export default async function PaginaAvisos({ searchParams }: PageProps<"/avisos">) {
@@ -67,7 +68,7 @@ export default async function PaginaAvisos({ searchParams }: PageProps<"/avisos"
                     </span>
                   </span>
                 </p>
-                <form action={abrirAviso.bind(null, aviso.id, aviso.producto?.id ?? null)} className="mt-4">
+                <form action={abrirAviso.bind(null, aviso.id, aviso.tipo === "pago" ? null : (aviso.producto?.id ?? null), aviso.tipo === "pago")} className="mt-4">
                   <button
                     type="submit"
                     className="flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-fondo-suave text-lg font-semibold text-marca hover:bg-marca-claro"

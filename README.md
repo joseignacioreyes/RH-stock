@@ -18,7 +18,7 @@ Este proyecto se construye con Claude Code siguiendo `CLAUDE.md`, por fases y co
 | 2b. Modo caja | ✅ Aprobada |
 | 3. Foto de la boleta | ✅ Aprobada ([capturas](previews/fase-3/index.html)); falta probar la lectura real con la clave de Claude |
 | 4. Avisos y precios | ✅ Aprobada ([capturas](previews/fase-4/index.html)); el envío por correo y push se suma con Resend y Vercel |
-| 5. Suscripciones y pagos | ⏳ Siguiente |
+| 5. Suscripciones y pagos | 🔍 En revisión ([capturas](previews/fase-5/index.html)); faltan los datos de la cuenta de la SpA |
 | 6. Exportar y "Mis datos" | ✅ Aprobada |
 | 7. Piloto | ✅ Aprobada ([guía](docs/fase-7-piloto.md), [capturas](previews/fase-7/index.html)) |
 
@@ -54,6 +54,7 @@ npm run dev                       # abre http://localhost:3000
 | `npm run cuenta:enlace-clave -- --rut …` | Enlace para que alguien elija una clave nueva (enviarlo solo a su correo registrado) |
 | `npm run produccion:migrar` | Aplica en el Supabase de producción las migraciones que falten (necesita `SUPABASE_ACCESS_TOKEN` y `SUPABASE_PROYECTO`) |
 | `npm run demo:boleta` | Vuelve a dibujar la boleta de ejemplo (inventada) |
+| `node scripts/demo/generar-comprobante.mjs` | Dibuja un comprobante de transferencia de ejemplo (inventado) |
 | `npm run db:tipos` | Actualiza los tipos de la base de datos después de cambiar una migración |
 | `npm run lint` / `npm run typecheck` | Revisan el código en busca de errores |
 | `npm run capturas -- 0` | Toma las capturas de la fase indicada (con `npm run dev` abierto en otra ventana) y arma `previews/fase-N/index.html` |
@@ -79,6 +80,7 @@ Están documentadas en [`.env.example`](.env.example). En tu computador van en `
 - **Caja:** `registrar_venta` guarda la venta y descuenta el stock en una sola operación; cada venta lleva un `id_local` generado en el celular y la base no acepta dos iguales (sin duplicados al sincronizar). Sin internet, las ventas quedan en IndexedDB (`src/lib/caja/`) y `public/sw.js` permite abrir `/vender` sin conexión. El escáner usa el `BarcodeDetector` de Chrome en Android.
 - **Mis datos (Ley 21.719):** `/api/exportar/[tipo]` entrega CSV para Excel (punto y coma, coma decimal, DD-MM-AAAA) y "todos mis datos" en JSON. Eliminar la cuenta se programa a 30 días (`solicitudes_eliminacion`) y la tarea diaria `/api/cron/eliminaciones` (Vercel Cron, `vercel.json`, protegida con `CRON_SECRET`) borra fotos, cuentas y datos. Procedimiento ante filtraciones: [`docs/procedimiento-filtracion.md`](docs/procedimiento-filtracion.md).
 - **Piloto:** `metricas_uso()` (solo el administrador) entrega números de uso por negocio; las correcciones a lo leído por la IA se cuentan solas al confirmar (`documentos_compra.items_corregidos`) y un aviso cuenta como visto solo si la persona lo abre (`alertas.vista_en`). Panel en `/admin/piloto`.
+- **Suscripción y pagos:** cada negocio tiene plan `piloto` (gratis, con el que parten todos) o `mensual` (`empresas.precio_mensual`, $30.000 con IVA incluido por defecto, y `proximo_vencimiento`). El estado (`al_dia`, `por_vencer` 3 días antes, `atrasado`, `suspendido` con más de 10 días de atraso; ver `configuracion_cobro`) se calcula en el momento con `estado_suscripcion_de()`. Suspendido = **solo para mirar**: `puedo_modificar()` no deja registrar nada, pero sí ver, descargar y pagar; si el pago ya se informó, no se suspende. El dueño sube el comprobante al espacio privado `comprobantes` (`informar_pago`) y la IA lee monto, fecha y banco (`src/lib/lector-comprobantes/`). El administrador confirma (`confirmar_pago`: el vencimiento pasa al mes siguiente) o rechaza con motivo (`rechazar_pago`). La tarea diaria `/api/cron/suscripciones` deja en Avisos el recordatorio, el atraso y la suspensión. Los pagos se conservan aunque el negocio elimine su cuenta (respaldo tributario). Datos de la cuenta para transferir: variables `TRANSFERENCIA_*`.
 - Los empleados no ven costos: el dueño los obtiene con la función `costos_de_mi_negocio()`.
 - Las personas entran con RUT y clave. Por dentro, Supabase Auth usa un correo interno armado con el RUT (`12345678-5@cuentas.rhstock.cl`); el correo real queda en la tabla `usuarios` y se usa solo para recuperar la clave.
 - En el Supabase de producción: **Authentication → Sign In / Providers → desactivar "Allow new users to sign up"** (las cuentas las crea solo la app).

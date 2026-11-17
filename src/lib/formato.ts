@@ -41,6 +41,12 @@ export function formatearFecha(fecha: string | Date): string {
   return `${partes.day}-${partes.month}-${partes.year}`;
 }
 
+/** Día sin hora, como lo guarda la base ("2026-12-05") → "05-12-2026". (No pasa por zonas horarias.) */
+export function formatearDia(dia: string): string {
+  const [anio, mes, d] = dia.slice(0, 10).split("-");
+  return `${d}-${mes}-${anio}`;
+}
+
 /** Lee un número escrito por una persona: "1.350" → 1350, "1,5" → 1.5, "$2.000" → 2000. */
 export function leerNumero(texto: string): number | null {
   const limpio = texto.replace(/[$\s]/g, "");

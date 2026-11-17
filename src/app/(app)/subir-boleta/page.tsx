@@ -6,6 +6,7 @@ import { Aviso } from "@/components/ui/Aviso";
 import { Pantalla } from "@/components/ui/Pantalla";
 import { obtenerUltimasCompras, type EstadoDocumento } from "@/lib/compras";
 import { formatearFecha, formatearPesos } from "@/lib/formato";
+import { AvisoSoloLectura } from "@/components/FranjaPago";
 import { exigirSesionDeNegocio } from "@/lib/sesion";
 import { ingresarAMano } from "./acciones";
 import { SubirFoto } from "./SubirFoto";
@@ -20,7 +21,7 @@ const ESTADOS: Record<EstadoDocumento, { texto: string; clases: string }> = {
 };
 
 export default async function PaginaSubirBoleta({ searchParams }: PageProps<"/subir-boleta">) {
-  await exigirSesionDeNegocio();
+  const { empresa, usuario } = await exigirSesionDeNegocio();
   const { listo, error } = await searchParams;
   const compras = await obtenerUltimasCompras();
 
@@ -48,7 +49,7 @@ export default async function PaginaSubirBoleta({ searchParams }: PageProps<"/su
         </div>
       )}
 
-      <SubirFoto />
+      {empresa.suspendida ? <AvisoSoloLectura esDueno={usuario.rol === "dueno"} /> : <SubirFoto />}
 
       <div className="mt-6 flex items-center gap-4 rounded-2xl bg-fondo p-4 shadow-sm">
         <Image

@@ -16,6 +16,7 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { createClient } from "@supabase/supabase-js";
+import { dibujarComprobante } from "./demo/generar-comprobante.mjs";
 
 const raiz = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -71,6 +72,13 @@ async function borrarDemoAnterior() {
     const { data: fotos } = await admin.storage.from("boletas").list(empresa.id);
     if (fotos?.length) await admin.storage.from("boletas").remove(fotos.map((f) => `${empresa.id}/${f.name}`));
   }
+
+  // Pagos y comprobantes del demo anterior (los de negocios reales nunca se borran: son respaldo tributario).
+  for (const empresa of empresas) {
+    const { data: comprobantes } = await admin.storage.from("comprobantes").list(empresa.id);
+    if (comprobantes?.length) await admin.storage.from("comprobantes").remove(comprobantes.map((f) => `${empresa.id}/${f.name}`));
+  }
+  if (empresas.length) await ok(admin.from("pagos").delete().in("empresa_id", empresas.map((e) => e.id)), "borrar pagos anteriores");
 
   if (empresas.length) await ok(admin.from("empresas").delete().in("id", empresas.map((e) => e.id)), "borrar negocio anterior");
 }
@@ -467,7 +475,7 @@ async function main() {
   await ok(
     admin
       .from("empresas")
-      .update({ es_demo: true, razon_social: DEMO.empresa.razonSocial, plan: "mensual", estado_suscripcion: "al_dia", dia_pago: 5 })
+      .update({ es_demo: true, razon_social: DEMO.empresa.razonSocial })
       .eq("id", empresaId),
     "marcar como negocio de ejemplo",
   );
@@ -482,6 +490,7 @@ async function main() {
 
   const categorias = await ok(admin.from("categorias").select("id", { count: "exact", head: false }).eq("empresa_id", empresaId), "contar categorías");
   const inventario = await crearProductos(empresaId, idVendedores);
+  const plan = await crearPagos(empresaId);
 
   console.log("✓ Negocio: Almacén Don Pepe (RUT 76.543.210-3), solo para mirar");
   console.log("✓ Dueño: Pepe Demo (RUT 12.345.678-5)");
@@ -490,6 +499,79 @@ async function main() {
   console.log(`✓ Productos: ${inventario.productos}, con ${inventario.movimientos} movimientos del último mes`);
   console.log(`✓ Compras: ${inventario.compras} boletas confirmadas y 1 por confirmar (con foto)`);
   console.log(`✓ Ventas: ${inventario.ventas} ventas de Carla y Matías en el mes, y 2 cierres de caja`);
+  console.log(`✓ Plan mensual $30.000: ${plan.anterior} pagado y ${plan.actual} "en revisión" (con comprobante de ejemplo)`);
+}
+
+// -----------------------------------------------------------------------------
+// Fase 5: plan mensual al día, el pago del mes pasado confirmado y el de este mes informado
+// (con comprobante inventado), para que el administrador lo confirme.
+// -----------------------------------------------------------------------------
+const MESES = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
+const nombreMes = (periodo) => `${MESES[Number(periodo.slice(5, 7)) - 1]} ${periodo.slice(0, 4)}`;
+const sumarDias = (fecha, dias) => {
+  const d = new Date(`${fecha}T12:00:00Z`);
+  d.setUTCDate(d.getUTCDate() + dias);
+  return d.toISOString().slice(0, 10);
+};
+const sumarMeses = (fecha, meses) => {
+  const d = new Date(`${fecha}T12:00:00Z`);
+  d.setUTCMonth(d.getUTCMonth() + meses);
+  return d.toISOString().slice(0, 10);
+};
+
+async function crearPagos(empresaId) {
+  const DIA_PAGO = 5;
+  const PRECIO = 30000;
+  const hoy = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Santiago" }).format(new Date());
+  // Próximo vencimiento: el próximo día 5 (si hoy es 5 o antes, el de este mes).
+  const esteMes = `${hoy.slice(0, 8)}0${DIA_PAGO}`;
+  const proximo = hoy <= esteMes ? esteMes : sumarMeses(esteMes, 1);
+  const anterior = sumarMeses(proximo, -1);
+
+  await ok(
+    admin.from("empresas").update({ plan: "mensual", precio_mensual: PRECIO, dia_pago: DIA_PAGO, proximo_vencimiento: proximo }).eq("id", empresaId),
+    "plan mensual",
+  );
+
+  const pagos = [
+    { periodo: anterior.slice(0, 7), fecha: sumarDias(anterior, -2), estado: "confirmado", operacion: "000118734" },
+    { periodo: proximo.slice(0, 7), fecha: hoy < proximo ? sumarDias(hoy, -1) : hoy, estado: "informado", operacion: "000123456" },
+  ];
+  for (const pago of pagos) {
+    const ruta = `${empresaId}/comprobante-${pago.periodo}.png`;
+    const imagen = await dibujarComprobante({ fecha: pago.fecha, monto: PRECIO, operacion: pago.operacion });
+    await ok(admin.storage.from("comprobantes").upload(ruta, imagen, { contentType: "image/png", upsert: true }), "subir comprobante de ejemplo");
+    const informado = `${pago.fecha}T13:42:00-03:00`;
+    await ok(
+      admin.from("pagos").insert({
+        empresa_id: empresaId,
+        rut_empresa: DEMO.empresa.rut.replace(/\./g, ""),
+        nombre_negocio: DEMO.empresa.nombre,
+        periodo: pago.periodo,
+        monto: PRECIO,
+        estado: pago.estado,
+        comprobante_url: ruta,
+        datos_extraidos: { monto: PRECIO, fecha: pago.fecha, banco: "Banco Ficticio", titular: "Pepe Demo", operacion: pago.operacion },
+        informado_en: informado,
+        fecha_confirmacion: pago.estado === "confirmado" ? `${pago.fecha}T18:10:00-03:00` : null,
+      }),
+      "crear pago de ejemplo",
+    );
+  }
+
+  await ok(
+    admin.from("alertas").insert({
+      empresa_id: empresaId,
+      tipo: "pago",
+      mensaje: `Recibimos tu pago de ${nombreMes(pagos[0].periodo)}. ¡Gracias! Tu próximo pago vence el ${proximo.split("-").reverse().join("-")}.`,
+      datos: { clave: `confirmado-demo-${pagos[0].periodo}`, periodo: pagos[0].periodo },
+      leida: true,
+      created_at: `${pagos[0].fecha}T18:10:00-03:00`,
+    }),
+    "aviso de pago confirmado",
+  );
+  await admin.rpc("refrescar_estado_suscripcion", { p_empresa_id: empresaId });
+  return { anterior: nombreMes(pagos[0].periodo), actual: nombreMes(pagos[1].periodo) };
 }
 
 main().catch((error) => {

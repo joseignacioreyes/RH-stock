@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { exigirSesionDeNegocio } from "@/lib/sesion";
+import { exigirSesionDeNegocio, MENSAJE_SUSPENDIDA } from "@/lib/sesion";
 import { crearClienteServidor } from "@/lib/supabase/servidor";
 
 export type EstadoVendedor = { error?: string; errores?: Record<string, string> };
@@ -15,6 +15,7 @@ async function exigirDueno() {
 
 export async function agregarVendedor(_estado: EstadoVendedor, formData: FormData): Promise<EstadoVendedor> {
   const { empresa } = await exigirDueno();
+  if (empresa.suspendida) return { error: MENSAJE_SUSPENDIDA };
   if (empresa.esDemo) return { error: "En el negocio de ejemplo no se agregan vendedores. Crea tu cuenta para usarlo de verdad." };
 
   const nombre = String(formData.get("nombre") ?? "").trim();
@@ -35,6 +36,7 @@ export async function agregarVendedor(_estado: EstadoVendedor, formData: FormDat
 
 export async function desactivarVendedor(vendedorId: string): Promise<void> {
   const { empresa } = await exigirDueno();
+  if (empresa.suspendida) redirect("/mas/mi-plan?pausada=1");
   if (empresa.esDemo) redirect("/mas/vendedores?error=demo");
   const supabase = await crearClienteServidor();
   await supabase.from("vendedores").update({ activo: false }).eq("id", vendedorId);

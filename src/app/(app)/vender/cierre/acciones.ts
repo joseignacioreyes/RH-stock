@@ -3,11 +3,12 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { leerNumero } from "@/lib/formato";
-import { exigirSesionDeNegocio } from "@/lib/sesion";
+import { exigirSesionDeNegocio, MENSAJE_SUSPENDIDA } from "@/lib/sesion";
 import { crearClienteServidor } from "@/lib/supabase/servidor";
 
 export async function cerrarCaja(fecha: string, _estado: { error?: string }, formData: FormData): Promise<{ error?: string }> {
   const { empresa } = await exigirSesionDeNegocio();
+  if (empresa.suspendida) return { error: MENSAJE_SUSPENDIDA };
   if (empresa.esDemo) return { error: "En el negocio de ejemplo no se guarda el cierre. Crea tu cuenta para usarlo de verdad." };
   const contado = leerNumero(String(formData.get("contado") ?? ""));
   if (contado === null || contado < 0) return { error: "Escribe el efectivo con números, por ejemplo 45.000." };

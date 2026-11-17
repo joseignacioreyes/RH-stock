@@ -1164,6 +1164,250 @@ const PANTALLAS = {
       },
     ],
   },
+  5: {
+    titulo: "Fase 5: Suscripciones y pagos",
+    resumen:
+      "Cada negocio tiene un plan: piloto gratis o mensual de $30.000 con IVA incluido. Tres días antes del vencimiento se avisa; el dueño ve los datos para transferir, los copia con un botón y sube la captura o el PDF del comprobante (la IA lee monto, fecha y banco). José lo confirma con un clic desde su panel. Con más de 10 días de atraso, la app queda solo para mirar hasta que se confirme el pago; nunca se borra nada. Los datos de la cuenta son de ejemplo hasta que tengas la de la SpA.",
+    preparar: prepararFase5,
+    pantallas: [
+      {
+        archivo: "01-mi-plan-piloto",
+        ruta: "/entrar",
+        titulo: "Mi plan, en el piloto gratis",
+        descripcion: "Así lo ven los almacenes del piloto: no pagan nada hasta que tú cambies su plan. Se entra por Más → Mi plan y pagos.",
+        pasos: async (pagina) => {
+          await estadoRosa("piloto");
+          await entrarComo(pagina, ROSA.rut, ROSA.clave);
+          await pagina.waitForURL("**/inicio");
+          await pagina.goto(URL_APP + "/mas/mi-plan");
+        },
+      },
+      {
+        archivo: "02-inicio-pago-por-vencer",
+        ruta: "/entrar",
+        titulo: "Inicio: el pago vence en 2 días",
+        descripcion: "Tres días antes del vencimiento aparece esta tarjeta en el inicio (y un aviso en Avisos). Al tocarla, lleva a “Mi plan”.",
+        pasos: async (pagina) => {
+          await estadoRosa("por_vencer");
+          await entrarComo(pagina, ROSA.rut, ROSA.clave);
+          await pagina.waitForURL("**/inicio");
+        },
+      },
+      {
+        archivo: "03-mi-plan-como-pagar",
+        ruta: "/entrar",
+        titulo: "Mi plan: cómo pagar",
+        descripcion:
+          "Paso 1: los datos de la cuenta, con un botón “Copiar datos” para pegarlos en la app del banco. Paso 2: “Ya pagué: subir comprobante”. (La cuenta es de ejemplo hasta que me des la de la SpA.)",
+        pasos: async (pagina) => {
+          await estadoRosa("por_vencer");
+          await entrarComo(pagina, ROSA.rut, ROSA.clave);
+          await pagina.waitForURL("**/inicio");
+          await pagina.goto(URL_APP + "/mas/mi-plan");
+        },
+      },
+      {
+        archivo: "04-subir-comprobante",
+        ruta: "/entrar",
+        titulo: "Subir el comprobante",
+        descripcion: "Se elige la captura de pantalla o el PDF del banco (o se le saca una foto). Se envía solo.",
+        pasos: async (pagina) => {
+          await estadoRosa("por_vencer");
+          await entrarComo(pagina, ROSA.rut, ROSA.clave);
+          await pagina.waitForURL("**/inicio");
+          await pagina.goto(URL_APP + "/mas/mi-plan/comprobante");
+        },
+      },
+      {
+        archivo: "05-revisando-comprobante",
+        ruta: "/entrar",
+        titulo: "Revisando el comprobante (cargando)",
+        descripcion: "Mientras la IA lee el comprobante.",
+        sinEsperar: true,
+        soloPantalla: true,
+        pasos: async (pagina) => {
+          await estadoRosa("por_vencer");
+          await entrarComo(pagina, ROSA.rut, ROSA.clave);
+          await pagina.waitForURL("**/inicio");
+          await pagina.goto(URL_APP + "/mas/mi-plan/comprobante");
+          await pagina.locator('input[type="file"]:not([capture])').setInputFiles(COMPROBANTE);
+          await pagina.getByText("Revisando tu comprobante…").waitFor();
+        },
+      },
+      {
+        archivo: "06-comprobante-borroso",
+        ruta: "/entrar",
+        titulo: "Error: la foto salió borrosa",
+        descripcion: "Si no se puede leer, pide otra foto con un mensaje simple. No se guarda nada.",
+        pasos: async (pagina) => {
+          await estadoRosa("por_vencer");
+          await entrarComo(pagina, ROSA.rut, ROSA.clave);
+          await pagina.waitForURL("**/inicio");
+          await pagina.goto(URL_APP + "/mas/mi-plan/comprobante");
+          await pagina.locator('input[type="file"][capture]').setInputFiles(FOTO_MALA);
+          await pagina.getByText(/salió borrosa/).waitFor({ timeout: 20000 });
+        },
+      },
+      {
+        archivo: "07-comprobante-recibido",
+        ruta: "/entrar",
+        titulo: "Listo: comprobante recibido",
+        descripcion: "Confirma lo que leyó (monto, fecha y banco) y queda “En revisión” hasta que tú lo confirmes. Si el monto no coincide con el plan, se lo advierte.",
+        pasos: async (pagina) => {
+          await estadoRosa("por_vencer");
+          await entrarComo(pagina, ROSA.rut, ROSA.clave);
+          await pagina.waitForURL("**/inicio");
+          await pagina.goto(URL_APP + "/mas/mi-plan/comprobante");
+          await pagina.locator('input[type="file"]:not([capture])').setInputFiles(COMPROBANTE);
+          await pagina.waitForURL("**listo=informado**", { timeout: 20000 });
+        },
+      },
+      {
+        archivo: "08-pago-atrasado",
+        ruta: "/entrar",
+        titulo: "Pago atrasado",
+        descripcion: "Pasado el vencimiento, una franja arriba avisa desde qué día la app quedará solo para mirar, con el botón “Pagar”.",
+        pasos: async (pagina) => {
+          await estadoRosa("atrasado");
+          await entrarComo(pagina, ROSA.rut, ROSA.clave);
+          await pagina.waitForURL("**/inicio");
+        },
+      },
+      {
+        archivo: "09-solo-para-mirar",
+        ruta: "/entrar",
+        titulo: "Más de 10 días de atraso: solo para mirar",
+        descripcion: "Franja roja arriba. Puede ver todo (stock, avisos, descargar a Excel), pero no registrar compras ni ventas hasta que confirmes el pago. Nunca se borra nada.",
+        pasos: async (pagina) => {
+          await entrarComo(pagina, NUEVO.rut, NUEVO.clave);
+          await pagina.waitForURL("**/inicio");
+        },
+      },
+      {
+        archivo: "10-vender-pausado",
+        ruta: "/entrar",
+        titulo: "La caja en pausa",
+        descripcion: "En Vender y Subir boleta explica por qué no se puede y qué hacer. Las ventas que hayan quedado guardadas en el celular se envían solas cuando confirmes el pago.",
+        pasos: async (pagina) => {
+          await entrarComo(pagina, NUEVO.rut, NUEVO.clave);
+          await pagina.waitForURL("**/inicio");
+          await pagina.goto(URL_APP + "/vender");
+        },
+      },
+      {
+        archivo: "11-avisos-de-pago",
+        ruta: "/entrar",
+        titulo: "Avisos de pago",
+        descripcion: "La tarea diaria deja en Avisos el recordatorio, el atraso y el paso a “solo para mirar” (más adelante también por correo y notificación). Los empleados no los ven.",
+        pasos: async (pagina) => {
+          await entrarComo(pagina, NUEVO.rut, NUEVO.clave);
+          await pagina.waitForURL("**/inicio");
+          await pagina.goto(URL_APP + "/avisos");
+        },
+      },
+      {
+        archivo: "12-admin-pagos-por-revisar",
+        ruta: "/entrar",
+        titulo: "Tu panel: pagos por revisar",
+        descripcion:
+          "Arriba, cuánto recibiste este mes y cuántos están atrasados. Cada pago informado muestra el comprobante y lo que leyó la IA. Revisa en tu banco que llegó y aprieta “Confirmar pago”.",
+        escritorio: true,
+        pasos: async (pagina) => {
+          await pagoEsquinaInformado();
+          await entrarComo(pagina, ADMIN_PRUEBA.rut, ADMIN_PRUEBA.clave);
+          await pagina.waitForURL("**/admin");
+        },
+      },
+      {
+        archivo: "13-admin-rechazar",
+        ruta: "/entrar",
+        titulo: "Rechazar un pago",
+        descripcion: "Si no llegó la transferencia o el monto no coincide, eliges el motivo con un toque. El dueño lo ve en Avisos y puede subirlo de nuevo.",
+        escritorio: true,
+        pasos: async (pagina) => {
+          await pagoEsquinaInformado();
+          await entrarComo(pagina, ADMIN_PRUEBA.rut, ADMIN_PRUEBA.clave);
+          await pagina.waitForURL("**/admin");
+          await pagina.getByText("Rechazar", { exact: false }).first().click();
+        },
+      },
+      {
+        archivo: "14-admin-pago-confirmado",
+        ruta: "/entrar",
+        titulo: "Pago confirmado",
+        descripcion: "Con un clic el negocio queda al día, su próximo pago pasa al mes siguiente y le llega el aviso “Recibimos tu pago”.",
+        escritorio: true,
+        pasos: async (pagina) => {
+          await pagoEsquinaInformado();
+          await entrarComo(pagina, ADMIN_PRUEBA.rut, ADMIN_PRUEBA.clave);
+          await pagina.waitForURL("**/admin");
+          await pagina.locator("article", { hasText: ESQUINA.negocio }).getByRole("button", { name: /Confirmar pago/ }).click();
+          await pagina.waitForURL("**listo=confirmado**");
+        },
+      },
+      {
+        archivo: "15-admin-plan-del-negocio",
+        ruta: "/entrar",
+        titulo: "Plan de un negocio",
+        descripcion: "Al tocar un negocio en la lista: cambiar de piloto gratis a mensual (con su precio y el día del primer pago) e historial de pagos con sus comprobantes.",
+        escritorio: true,
+        pasos: async (pagina) => {
+          await pagoEsquinaInformado();
+          await entrarComo(pagina, ADMIN_PRUEBA.rut, ADMIN_PRUEBA.clave);
+          await pagina.waitForURL("**/admin");
+          await pagina.getByRole("link", { name: ESQUINA.negocio, exact: true }).click();
+          await pagina.waitForURL("**/admin/negocios/**");
+        },
+      },
+      {
+        archivo: "16-excel-de-pagos",
+        ruta: "/entrar",
+        titulo: "Descargar pagos a Excel",
+        descripcion: "Los pagos confirmados con las mismas columnas de la hoja “Ingresos” de tu planilla de cuentas (neto e IVA ya separados).",
+        pasos: async (pagina) => {
+          await entrarComo(pagina, ADMIN_PRUEBA.rut, ADMIN_PRUEBA.clave);
+          await pagina.waitForURL("**/admin");
+          const csv = await descargarTexto(pagina, /Descargar pagos a Excel/);
+          await mostrarComoPlanilla(pagina, csv, 6);
+        },
+      },
+    ],
+    recorrido: async (pagina) => {
+      await estadoRosa("por_vencer");
+      await entrarComo(pagina, ROSA.rut, ROSA.clave);
+      await pagina.waitForURL("**/inicio");
+      await pausa(pagina, 1800);
+      await pagina.getByRole("link", { name: /Ver cómo pagar/ }).click();
+      await pagina.waitForURL("**/mas/mi-plan");
+      await pausa(pagina, 1500);
+      await pagina.getByRole("button", { name: /Copiar datos/ }).scrollIntoViewIfNeeded();
+      await pausa(pagina, 1200);
+      await pagina.getByRole("link", { name: /Ya pagué/ }).click();
+      await pagina.waitForURL("**/comprobante");
+      await pausa(pagina, 1200);
+      await pagina.locator('input[type="file"]:not([capture])').setInputFiles(COMPROBANTE);
+      await pagina.waitForURL("**listo=informado**", { timeout: 20000 });
+      await pausa(pagina, 2500);
+      // José confirma el pago desde su panel…
+      await pagina.context().clearCookies();
+      await entrarComo(pagina, ADMIN_PRUEBA.rut, ADMIN_PRUEBA.clave);
+      await pagina.waitForURL("**/admin");
+      const tarjeta = pagina.locator("article", { hasText: ROSA.negocio });
+      await tarjeta.scrollIntoViewIfNeeded();
+      await pausa(pagina, 2000);
+      await tarjeta.getByRole("button", { name: /Confirmar pago/ }).click();
+      await pagina.waitForURL("**listo=confirmado**");
+      await pausa(pagina, 1800);
+      // …y a Rosa le llega el aviso.
+      await pagina.context().clearCookies();
+      await entrarComo(pagina, ROSA.rut, ROSA.clave);
+      await pagina.waitForURL("**/inicio");
+      await pausa(pagina, 1000);
+      await pagina.getByRole("link", { name: /Avisos/ }).click();
+      await pagina.waitForURL("**/avisos");
+      await pausa(pagina, 2500);
+    },
+  },
 };
 
 // ---------------------------------------------------------------------------
@@ -1541,6 +1785,102 @@ async function prepararFase7() {
   await rosa.rpc("registrar_conteo", { p_conteos: [{ producto_id: id("Pan hallulla"), cantidad_real: 9 }] });
   await rosa.from("alertas").update({ leida: true }).eq("tipo", "costo_sube");
   await rosa.rpc("registrar_evento", { p_evento: "precio_sugerido_usado" });
+}
+
+// ---------------------------------------------------------------------------
+// Fase 5: Rosa (por vencer / atrasada / piloto), Nelson (solo para mirar) y
+// Minimarket La Esquina (con un pago informado para revisar). Solo en Supabase local.
+// ---------------------------------------------------------------------------
+const ESQUINA = { rut: "17.777.777-3", rutNormalizado: "17777777-3", nombre: "Elena Prueba", negocio: "Minimarket La Esquina", rutNegocio: "79999999-4", clave: "Prueba1234" };
+const COMPROBANTE = path.join(raiz, "scripts/demo/comprobante-ejemplo.png");
+
+const hoyChile = () => new Intl.DateTimeFormat("en-CA", { timeZone: "America/Santiago" }).format(new Date());
+function diaDesdeHoy(dias) {
+  const d = new Date(`${hoyChile()}T12:00:00Z`);
+  d.setUTCDate(d.getUTCDate() + dias);
+  return d.toISOString().slice(0, 10);
+}
+
+async function idEmpresa(admin, persona) {
+  const { data } = await admin.from("empresas").select("id").eq("rut", persona.rutNegocio).single();
+  return data.id;
+}
+
+/**
+ * Deja el plan de un negocio de prueba como se necesita, sin pagos por revisar ni avisos de pago anteriores.
+ * (Con conservarPagados, los pagos ya confirmados se quedan, para el historial y la descarga a Excel.)
+ */
+async function dejarPlan(admin, persona, plan, vencimiento, { conservarPagados = false } = {}) {
+  const empresaId = await idEmpresa(admin, persona);
+  if (!conservarPagados) {
+    const { data: archivos } = await admin.storage.from("comprobantes").list(empresaId);
+    if (archivos?.length) await admin.storage.from("comprobantes").remove(archivos.map((f) => `${empresaId}/${f.name}`));
+  }
+  let borrar = admin.from("pagos").delete().eq("rut_empresa", persona.rutNegocio);
+  if (conservarPagados) borrar = borrar.neq("estado", "confirmado");
+  await borrar;
+  await admin.from("alertas").delete().eq("empresa_id", empresaId).eq("tipo", "pago");
+  const dia = vencimiento ? Math.min(Number(vencimiento.slice(8, 10)), 28) : 5;
+  const { error } = await admin.from("empresas").update({ plan, proximo_vencimiento: vencimiento, dia_pago: dia, precio_mensual: 30000 }).eq("id", empresaId);
+  if (error) throw error;
+  await admin.rpc("actualizar_suscripciones");
+  return empresaId;
+}
+
+async function estadoRosa(estado) {
+  const admin = clienteAdminLocal();
+  const vencimiento = { piloto: null, por_vencer: diaDesdeHoy(2), atrasado: diaDesdeHoy(-3) }[estado];
+  await dejarPlan(admin, ROSA, estado === "piloto" ? "piloto" : "mensual", vencimiento, { conservarPagados: true });
+}
+
+/** La Esquina con su pago de este mes informado (con comprobante), listo para revisar. */
+async function pagoEsquinaInformado() {
+  const admin = clienteAdminLocal();
+  const empresaId = await dejarPlan(admin, ESQUINA, "mensual", diaDesdeHoy(1));
+  const { readFile } = await import("node:fs/promises");
+  const ruta = `${empresaId}/comprobante.png`;
+  await admin.storage.from("comprobantes").upload(ruta, await readFile(COMPROBANTE), { contentType: "image/png", upsert: true });
+  const esquina = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY, { auth: { persistSession: false } });
+  await esquina.auth.signInWithPassword({ email: `${ESQUINA.rutNormalizado.toLowerCase()}@cuentas.rhstock.cl`, password: ESQUINA.clave });
+  const { data: pagoId, error } = await esquina.rpc("informar_pago", { p_comprobante_url: ruta });
+  if (error) throw error;
+  await admin
+    .from("pagos")
+    .update({ datos_extraidos: { monto: 25000, fecha: hoyChile(), banco: "Banco Ficticio", titular: "Elena Prueba", operacion: "000777001" } })
+    .eq("id", pagoId);
+}
+
+async function prepararFase5() {
+  await prepararFase1(); // administrador ficticio
+  const { execFileSync } = await import("node:child_process");
+  execFileSync(process.execPath, [path.join(raiz, "scripts/demo/generar-comprobante.mjs")], { stdio: "inherit" });
+  const admin = clienteAdminLocal();
+  // Los pagos se conservan aunque se borre el negocio (respaldo tributario): los de prueba se borran a mano.
+  await admin.from("pagos").delete().in("rut_empresa", [ROSA.rutNegocio, NUEVO.rutNegocio, ESQUINA.rutNegocio]);
+  await negocioDePrueba(admin, ROSA, PRODUCTOS_ROSA);
+  await negocioDePrueba(admin, NUEVO, PRODUCTOS_ROSA.slice(0, 3));
+  await negocioDePrueba(admin, ESQUINA);
+  // Rosa ya pagó el mes pasado (para que se vea en la descarga a Excel).
+  const rosaId = await dejarPlan(admin, ROSA, "mensual", diaDesdeHoy(2));
+  await admin.from("pagos").insert({
+    empresa_id: rosaId,
+    rut_empresa: ROSA.rutNegocio,
+    nombre_negocio: ROSA.negocio,
+    periodo: diaDesdeHoy(-28).slice(0, 7),
+    monto: 30000,
+    estado: "confirmado",
+    informado_en: `${diaDesdeHoy(-29)}T12:00:00-03:00`,
+    fecha_confirmacion: `${diaDesdeHoy(-29)}T18:00:00-03:00`,
+    datos_extraidos: { monto: 30000, fecha: diaDesdeHoy(-29), banco: "Banco Ficticio", titular: "Rosa Prueba", operacion: "000555001" },
+  });
+  // Nelson no paga hace 15 días: solo para mirar (y la tarea diaria le deja los avisos).
+  const nelsonId = await idEmpresa(admin, NUEVO);
+  await admin.from("alertas").delete().eq("empresa_id", nelsonId).eq("tipo", "pago");
+  await admin.from("empresas").update({ plan: "mensual", proximo_vencimiento: diaDesdeHoy(-5), dia_pago: Math.min(Number(diaDesdeHoy(-5).slice(8, 10)), 28) }).eq("id", nelsonId);
+  await admin.rpc("actualizar_suscripciones"); // aviso de atraso
+  await admin.from("empresas").update({ proximo_vencimiento: diaDesdeHoy(-15) }).eq("id", nelsonId);
+  await admin.rpc("actualizar_suscripciones"); // aviso de solo para mirar
+  console.log("(Recuerda: la app debe correr con LECTOR_BOLETAS=ejemplo LECTOR_BOLETAS_DEMORA=2500 para estas capturas)");
 }
 
 const escaparHtml = (texto) =>
