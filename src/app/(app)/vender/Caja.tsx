@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { avisarPendientes } from "../avisos/acciones";
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import {
   agregar,
@@ -96,6 +97,7 @@ export function Caja({ empresaId, esDemo, esDueno, productos, masVendidos, vende
     if (esDemo) return;
     try {
       const resumen = await sincronizar(almacenNavegador, enviarVenta);
+      if (resumen.enviadas > 0) void avisarPendientes().catch(() => {}); // "se está acabando" al celular
       setPendientes(resumen.pendientes);
       if (resumen.rechazadas.length) {
         setMensaje({ tipo: "error", texto: "Una venta no se pudo guardar. Escríbenos por WhatsApp para revisarla." });
@@ -174,6 +176,7 @@ export function Caja({ empresaId, esDemo, esDueno, productos, masVendidos, vende
     try {
       await encolar(almacenNavegador, venta); // primero en el celular: así nunca se pierde
       const resumen = await sincronizar(almacenNavegador, enviarVenta);
+      if (resumen.enviadas > 0) void avisarPendientes().catch(() => {}); // "se está acabando" al celular
       setPendientes(resumen.pendientes);
       avisar({
         tipo: "exito",

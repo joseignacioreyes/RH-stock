@@ -1,9 +1,11 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
 import { redirect } from "next/navigation";
 import { erroresPorCampo, primerError } from "@/lib/cuentas";
 import { esquemaProductoEditar, esquemaProductoNuevo, esquemaSalida } from "@/lib/esquemas-productos";
+import { enviarPushPendientes } from "@/lib/envio-avisos";
 import { exigirSesionDeNegocio, MENSAJE_SUSPENDIDA } from "@/lib/sesion";
 import { crearClienteServidor } from "@/lib/supabase/servidor";
 
@@ -59,6 +61,7 @@ export async function crearProducto(_estado: EstadoFormulario, formData: FormDat
     return { error: ERROR_GENERAL };
   }
 
+  after(() => enviarPushPendientes(empresa.id)); // avisos al celular, sin hacer esperar
   revalidatePath("/mi-stock", "layout");
   redirect(`/mi-stock/productos/${id}?listo=nuevo`);
 }
@@ -131,6 +134,7 @@ export async function registrarSalida(productoId: string, _estado: EstadoFormula
     return { error: ERROR_GENERAL };
   }
 
+  after(() => enviarPushPendientes(empresa.id)); // avisos al celular, sin hacer esperar
   revalidatePath("/mi-stock", "layout");
   redirect(`/mi-stock/productos/${productoId}?listo=salida&cantidad=${encodeURIComponent(String(validacion.data.cantidad))}`);
 }
@@ -150,6 +154,7 @@ export async function guardarConteo(conteos: { productoId: string; cantidadReal:
     return { error: ERROR_GENERAL };
   }
 
+  after(() => enviarPushPendientes(empresa.id)); // avisos al celular, sin hacer esperar
   revalidatePath("/mi-stock", "layout");
   redirect(`/mi-stock?listo=conteo&cambios=${cambios ?? 0}`);
 }

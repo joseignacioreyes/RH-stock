@@ -2,7 +2,9 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { after } from "next/server";
 import { z } from "zod";
+import { enviarPushPendientes } from "@/lib/envio-avisos";
 import { exigirAdmin } from "@/lib/sesion";
 import { crearClienteServidor } from "@/lib/supabase/servidor";
 
@@ -13,6 +15,7 @@ export async function confirmarPago(pagoId: string): Promise<void> {
   await exigirAdmin();
   const supabase = await crearClienteServidor();
   const { error } = await supabase.rpc("confirmar_pago", { p_pago_id: pagoId });
+  after(() => enviarPushPendientes()); // "Recibimos tu pago" o el motivo del rechazo, al celular del dueño
   revalidatePath("/admin", "layout");
   if (error) redirect(`/admin?error=${error.code === "RH004" ? "revisado" : "general"}`);
   redirect("/admin?listo=confirmado");
@@ -25,6 +28,7 @@ export async function rechazarPago(pagoId: string, formData: FormData): Promise<
   if (!motivo) redirect("/admin?error=motivo");
   const supabase = await crearClienteServidor();
   const { error } = await supabase.rpc("rechazar_pago", { p_pago_id: pagoId, p_motivo: motivo.slice(0, 200) });
+  after(() => enviarPushPendientes()); // "Recibimos tu pago" o el motivo del rechazo, al celular del dueño
   revalidatePath("/admin", "layout");
   if (error) redirect(`/admin?error=${error.code === "RH004" ? "revisado" : "general"}`);
   redirect("/admin?listo=rechazado");

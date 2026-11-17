@@ -134,6 +134,20 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"claves_push": {
+                  Row: {
+                    "created_at": string,"id": boolean,"privada": string,"publica": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"id"?: boolean,"privada": string,"publica": string
+                  }
+                  Update: {
+                    "created_at"?: string,"id"?: boolean,"privada"?: string,"publica"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"configuracion_cobro": {
                   Row: {
                     "created_at": string,"dias_aviso": number,"dias_gracia": number,"id": boolean,"updated_at": string
@@ -414,6 +428,20 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"recuperaciones_clave": {
+                  Row: {
+                    "created_at": string,"id": string,"rut": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"id"?: string,"rut": string
+                  }
+                  Update: {
+                    "created_at"?: string,"id"?: string,"rut"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"solicitudes_eliminacion": {
                   Row: {
                     "created_at": string,"eliminar_desde": string,"empresa_id": string | null,"estado": string,"id": string,"nombre_negocio": string,"realizada_en": string | null,"rut_empresa": string,"solicitada_por": string | null,"updated_at": string
@@ -440,16 +468,42 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
-                },"usuarios": {
+                },"suscripciones_push": {
                   Row: {
-                    "correo": string,"created_at": string,"empresa_id": string | null,"id": string,"nombre": string,"rol": string,"rut": string,"updated_at": string
+                    "auth": string,"created_at": string,"empresa_id": string,"endpoint": string,"id": string,"p256dh": string,"updated_at": string,"usuario_id": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "correo": string,"created_at"?: string,"empresa_id"?: string | null,"id": string,"nombre": string,"rol": string,"rut": string,"updated_at"?: string
+                    "auth": string,"created_at"?: string,"empresa_id": string,"endpoint": string,"id"?: string,"p256dh": string,"updated_at"?: string,"usuario_id": string
                   }
                   Update: {
-                    "correo"?: string,"created_at"?: string,"empresa_id"?: string | null,"id"?: string,"nombre"?: string,"rol"?: string,"rut"?: string,"updated_at"?: string
+                    "auth"?: string,"created_at"?: string,"empresa_id"?: string,"endpoint"?: string,"id"?: string,"p256dh"?: string,"updated_at"?: string,"usuario_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "suscripciones_push_empresa_id_fkey"
+      columns: ["empresa_id"]
+isOneToOne: false
+      referencedRelation: "empresas"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "suscripciones_push_usuario_id_fkey"
+      columns: ["usuario_id"]
+isOneToOne: false
+      referencedRelation: "usuarios"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"usuarios": {
+                  Row: {
+                    "avisos_por_correo": boolean,"correo": string,"created_at": string,"empresa_id": string | null,"id": string,"nombre": string,"rol": string,"rut": string,"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "avisos_por_correo"?: boolean,"correo": string,"created_at"?: string,"empresa_id"?: string | null,"id": string,"nombre": string,"rol": string,"rut": string,"updated_at"?: string
+                  }
+                  Update: {
+                    "avisos_por_correo"?: boolean,"correo"?: string,"created_at"?: string,"empresa_id"?: string | null,"id"?: string,"nombre"?: string,"rol"?: string,"rut"?: string,"updated_at"?: string
                   }
                   Relationships: [
                     {
@@ -535,6 +589,9 @@ isOneToOne: false
 "avisar_pago":
 { Args: { "p_clave": string,"p_empresa_id": string,"p_mensaje": string,"p_periodo": string }; Returns: undefined
                            },
+"cambiar_avisos_por_correo":
+{ Args: { "p_activo": boolean }; Returns: undefined
+                           },
 "cancelar_eliminacion":
 { Args: Record<PropertyKey, never>; Returns: undefined
                            },
@@ -585,6 +642,9 @@ isOneToOne: false
 "fecha_texto":
 { Args: { "p_fecha": string }; Returns: string
                            },
+"guardar_suscripcion_push":
+{ Args: { "p_auth": string,"p_endpoint": string,"p_p256dh": string }; Returns: undefined
+                           },
 "hoy_chile":
 { Args: Record<PropertyKey, never>; Returns: string
                            },
@@ -629,6 +689,9 @@ isOneToOne: false
                            },
 "puedo_modificar":
 { Args: { "p_empresa_id": string }; Returns: boolean
+                           },
+"quitar_suscripcion_push":
+{ Args: { "p_endpoint": string }; Returns: undefined
                            },
 "rechazar_pago":
 { Args: { "p_motivo": string,"p_pago_id": string }; Returns: undefined

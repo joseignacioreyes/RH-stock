@@ -2,10 +2,12 @@
 
 import { randomUUID } from "node:crypto";
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { leerBoleta, type ImagenBoleta } from "@/lib/lector-boletas/leer";
 import { MENSAJES_PROBLEMA } from "@/lib/lector-boletas/esquema";
+import { enviarPushPendientes } from "@/lib/envio-avisos";
 import { exigirSesionDeNegocio, MENSAJE_SUSPENDIDA } from "@/lib/sesion";
 import { crearClienteAdmin } from "@/lib/supabase/admin";
 import { crearClienteServidor } from "@/lib/supabase/servidor";
@@ -132,6 +134,7 @@ export async function confirmarBoleta(documentoId: string, datos: DatosConfirmac
     };
   }
 
+  after(() => enviarPushPendientes(empresa.id)); // avisos al celular, sin hacer esperar
   revalidatePath("/", "layout");
   redirect(`/subir-boleta?listo=${cantidad ?? 0}`);
 }

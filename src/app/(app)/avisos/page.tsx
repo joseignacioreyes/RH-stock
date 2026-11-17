@@ -5,8 +5,12 @@ import { Boton } from "@/components/ui/Boton";
 import { Pantalla } from "@/components/ui/Pantalla";
 import { obtenerAvisos, type TipoAviso } from "@/lib/avisos";
 import { formatearCantidad, formatearFecha, formatearPesos } from "@/lib/formato";
+import { ocultarCorreo } from "@/lib/plantillas-correo";
+import { clavesPush } from "@/lib/push";
 import { exigirSesionDeNegocio } from "@/lib/sesion";
-import { abrirAviso, marcarTodosLeidos } from "./acciones";
+import { crearClienteServidor } from "@/lib/supabase/servidor";
+import { abrirAviso, cambiarAvisosPorCorreo, marcarTodosLeidos } from "./acciones";
+import { ActivarAvisos } from "./ActivarAvisos";
 
 export const metadata: Metadata = { title: "Avisos" };
 
@@ -18,9 +22,14 @@ const ESTILO: Record<TipoAviso, { icono: string; borde: string; boton: string }>
 };
 
 export default async function PaginaAvisos({ searchParams }: PageProps<"/avisos">) {
-  await exigirSesionDeNegocio();
+  const { empresa, usuario } = await exigirSesionDeNegocio();
   const { listo, error } = await searchParams;
-  const avisos = await obtenerAvisos();
+  const supabase = await crearClienteServidor();
+  const [avisos, claves, { data: yo }] = await Promise.all([
+    obtenerAvisos(),
+    empresa.esDemo ? null : clavesPush().catch(() => null),
+    supabase.from("usuarios").select("correo, avisos_por_correo").eq("id", usuario.id).single(),
+  ]);
   const sinLeer = avisos.filter((a) => !a.leida);
   const leidos = avisos.filter((a) => a.leida);
 
@@ -31,6 +40,14 @@ export default async function PaginaAvisos({ searchParams }: PageProps<"/avisos"
           <Mensaje tipo="exito">Listo, marcaste todos los avisos como vistos.</Mensaje>
         </div>
       )}
+      {(listo === "correo-si" || listo === "correo-no") && (
+        <div className="mb-6">
+          <Mensaje tipo="exito">
+            {listo === "correo-si" ? "Listo, te enviaremos un resumen por correo cuando haya avisos nuevos." : "Listo, ya no te enviaremos correos con los avisos."}
+          </Mensaje>
+        </div>
+      )}
+      {claves && <ActivarAvisos clavePublica={claves.publica} />}
       {error === "demo" && (
         <div className="mb-6">
           <Mensaje tipo="error">En el negocio de ejemplo los avisos quedan siempre igual, para que todos puedan verlos.</Mensaje>
@@ -107,6 +124,22 @@ export default async function PaginaAvisos({ searchParams }: PageProps<"/avisos"
             ))}
           </ul>
         </>
+      )}
+
+      {usuario.rol === "dueno" && !empresa.esDemo && yo && (
+        <section className="mt-10 rounded-2xl bg-fondo p-5 shadow-sm" aria-label="Avisos por correo">
+          <p className="text-lg font-semibold text-texto">📧 Resumen por correo</p>
+          <p className="mt-1 text-base text-texto-suave">
+            {yo.avisos_por_correo
+              ? `Cada mañana, si hay avisos nuevos, te enviamos un resumen a ${ocultarCorreo(yo.correo)}.`
+              : "No te estamos enviando correos con los avisos."}
+          </p>
+          <form action={cambiarAvisosPorCorreo.bind(null, !yo.avisos_por_correo)} className="mt-3">
+            <button type="submit" className="min-h-12 w-full rounded-xl bg-fondo-suave text-lg font-semibold text-marca hover:bg-marca-claro">
+              {yo.avisos_por_correo ? "No enviarme correos" : "Sí, enviarme el resumen por correo"}
+            </button>
+          </form>
+        </section>
       )}
 
       <div className="mt-8">

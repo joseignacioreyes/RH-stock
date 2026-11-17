@@ -1164,6 +1164,79 @@ const PANTALLAS = {
       },
     ],
   },
+  "4b": {
+    titulo: "Fase 4 (parte 2): avisos al celular y por correo",
+    resumen:
+      "Los avisos (se está acabando, cambio de costo y pagos) ahora también llegan como notificación al celular, aunque la app esté cerrada, y cada mañana el dueño recibe un resumen por correo (puede dejar de recibirlo). Además, “Olvidé mi clave” es automático: el enlace llega al correo registrado, sin tener que escribirte por WhatsApp.",
+    canal: "chromium", // Chrome completo: permite pedir el permiso de notificaciones
+    preparar: async () => {
+      const admin = clienteAdminLocal();
+      await negocioDePrueba(admin, ROSA, PRODUCTOS_ROSA);
+    },
+    pantallas: [
+      {
+        archivo: "01-avisos-en-el-celular",
+        ruta: "/entrar",
+        titulo: "Avisos: activar en este celular",
+        descripcion:
+          "Arriba, “Sí, avisarme en este celular”: pide permiso una vez y desde ahí los avisos llegan como un mensaje. Abajo, el dueño elige si recibe el resumen diario por correo. Los empleados solo reciben “se está acabando”.",
+        pasos: async (pagina) => {
+          await entrarComo(pagina, ROSA.rut, ROSA.clave);
+          await pagina.waitForURL("**/inicio");
+          await pagina.goto(URL_APP + "/avisos");
+          await pagina.getByText("¿Quieres que te avisemos en el celular?").waitFor();
+        },
+      },
+      {
+        archivo: "02-correo-resumen",
+        ruta: "/",
+        titulo: "El resumen diario por correo",
+        descripcion: "Llega temprano en la mañana, solo si hay avisos nuevos que el dueño no ha visto en la app. Un botón lleva directo a Avisos.",
+        pasos: async (pagina) => {
+          const { correoResumenAvisos } = await import(path.join(raiz, "src/lib/plantillas-correo.ts"));
+          const { html } = correoResumenAvisos({
+            nombre: "Rosa",
+            negocio: ROSA.negocio,
+            sitio: "https://rhstock.cl",
+            avisos: [
+              { tipo: "stock_bajo", mensaje: "Se está acabando Arroz grado 1 1 kg." },
+              { tipo: "costo_sube", mensaje: "Tu costo de Aceite vegetal 1 L subió de $2.350 a $2.550 (+8,5%). Con tu margen objetivo de 18%, el precio sugerido es $3.110." },
+              { tipo: "pago", mensaje: "Tu pago de $30.000 de diciembre 2026 vence el 05-12-2026." },
+            ],
+          });
+          await pagina.setContent(html);
+        },
+      },
+      {
+        archivo: "03-olvide-mi-clave",
+        ruta: "/recuperar-clave",
+        titulo: "Olvidé mi clave",
+        descripcion: "La persona escribe su RUT y aprieta “Enviarme el enlace”. Si no tiene acceso a su correo, abajo puede pedir ayuda por WhatsApp.",
+      },
+      {
+        archivo: "04-revisa-tu-correo",
+        ruta: "/recuperar-clave",
+        titulo: "Revisa tu correo",
+        descripcion: "Siempre muestra el mismo mensaje, exista o no el RUT, para que nadie pueda averiguar quién tiene cuenta. Máximo 3 pedidos por hora.",
+        pasos: async (pagina) => {
+          await pagina.getByLabel("Tu RUT").fill(ROSA.rut);
+          await pagina.getByRole("button", { name: /Enviarme el enlace/ }).click();
+          await pagina.getByText("Revisa tu correo.").waitFor();
+        },
+      },
+      {
+        archivo: "05-correo-clave-nueva",
+        ruta: "/",
+        titulo: "El correo para elegir la clave nueva",
+        descripcion: "El botón abre la pantalla para elegir la clave nueva. Sirve por 1 hora.",
+        pasos: async (pagina) => {
+          const { correoRecuperarClave } = await import(path.join(raiz, "src/lib/plantillas-correo.ts"));
+          const { html } = correoRecuperarClave({ nombre: "Rosa", enlace: "https://rhstock.cl/auth/confirmar?token_hash=ejemplo&type=recovery", sitio: "https://rhstock.cl" });
+          await pagina.setContent(html);
+        },
+      },
+    ],
+  },
   5: {
     titulo: "Fase 5: Suscripciones y pagos",
     resumen:
@@ -2016,7 +2089,7 @@ async function main() {
   if (config.preparar) await config.preparar();
 
   // Cámara simulada (para la captura del escáner de la caja).
-  const navegador = await chromium.launch({ args: ["--use-fake-ui-for-media-stream", "--use-fake-device-for-media-stream"] });
+  const navegador = await chromium.launch({ channel: config.canal, args: ["--use-fake-ui-for-media-stream", "--use-fake-device-for-media-stream"] });
   const capturas = [];
   let video = null;
   try {
