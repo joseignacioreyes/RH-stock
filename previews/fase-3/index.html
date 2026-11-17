@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="es-CL">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Revisión Fase 3: Foto de la boleta | RH Stock</title>
+<style>
+  :root { --marca:#0F766E; --texto:#1F2937; --suave:#4B5563; --fondo:#F3F4F6; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--fondo); color:var(--texto); font:18px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  header { background:var(--marca); color:#fff; padding:24px 16px; }
+  header h1 { margin:0; font-size:28px; }
+  header p { margin:8px 0 0; max-width:720px; }
+  main { max-width:1100px; margin:0 auto; padding:16px; display:grid; gap:24px; }
+  .tarjeta { background:#fff; border-radius:16px; padding:20px; box-shadow:0 1px 3px rgb(0 0 0 / .08); }
+  .tarjeta h2 { margin:0 0 8px; font-size:22px; display:flex; align-items:center; gap:12px; }
+  .numero { display:inline-flex; align-items:center; justify-content:center; width:36px; height:36px; border-radius:50%; background:var(--marca); color:#fff; font-size:18px; flex-shrink:0; }
+  .tarjeta p { margin:0 0 16px; color:var(--suave); }
+  .imagenes { display:flex; flex-wrap:wrap; gap:20px; align-items:flex-start; }
+  figure { margin:0; }
+  figcaption { text-align:center; color:var(--suave); font-size:16px; margin-top:6px; }
+  img { display:block; max-width:100%; height:auto; border:1px solid #E5E7EB; border-radius:12px; }
+  .celular img { width:300px; }
+  video { display:block; max-width:100%; border-radius:12px; border:1px solid #E5E7EB; }
+  .escritorio { flex:1 1 480px; }
+  footer { text-align:center; color:var(--suave); font-size:16px; padding:24px 16px 40px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>RH Stock · Fase 3: Foto de la boleta</h1>
+  <p>Subir boleta ya funciona: sacas la foto, la app la lee, revisas producto por producto (con sugerencias de cuál es) y al confirmar se suma el stock y se recalcula el costo. La app aprende para la próxima vez. La foto queda guardada en privado.</p>
+</header>
+<main>
+<article class="tarjeta"><h2><span class="numero">▶</span> Video del recorrido</h2><p>El recorrido principal de la fase, como lo haría un almacenero.</p><video src="recorrido.webm" controls muted playsinline width="300"></video></article>
+
+      <article class="tarjeta">
+        <h2><span class="numero">1</span> Subir boleta</h2>
+        <p>Dos botones grandes: sacar foto o elegir de la galería. Abajo, un ejemplo de foto bien tomada y las últimas compras (la que dice “Falta revisar” está esperando que la confirmes).</p>
+        <div class="imagenes">
+          <figure class="celular"><img src="01-subir-boleta.png" alt="Subir boleta en celular" loading="lazy"><figcaption>Celular</figcaption></figure>
+          
+        </div>
+      </article>
+
+      <article class="tarjeta">
+        <h2><span class="numero">2</span> Leyendo tu boleta…</h2>
+        <p>Mientras la app lee la foto (unos segundos), se ve la foto y un aviso para no cerrar la pantalla. La foto se achica en el celular antes de subir.</p>
+        <div class="imagenes">
+          <figure class="celular"><img src="02-leyendo.png" alt="Leyendo tu boleta… en celular" loading="lazy"><figcaption>Celular</figcaption></figure>
+          
+        </div>
+      </article>
+
+      <article class="tarjeta">
+        <h2><span class="numero">3</span> Si la foto salió mal</h2>
+        <p>Si la foto está borrosa, oscura o cortada, la app lo dice en palabras simples y no guarda nada. Se vuelve a sacar al tiro.</p>
+        <div class="imagenes">
+          <figure class="celular"><img src="03-foto-borrosa.png" alt="Si la foto salió mal en celular" loading="lazy"><figcaption>Celular</figcaption></figure>
+          
+        </div>
+      </article>
+
+      <article class="tarjeta">
+        <h2><span class="numero">4</span> Revisar: datos de la boleta</h2>
+        <p>Primero lo general: a quién le compraste, la fecha y el total. Tocando la foto se ve grande.</p>
+        <div class="imagenes">
+          <figure class="celular"><img src="04-revisar-datos.png" alt="Revisar: datos de la boleta en celular" loading="lazy"><figcaption>Celular</figcaption></figure>
+          
+        </div>
+      </article>
+
+      <article class="tarjeta">
+        <h2><span class="numero">5</span> Revisar: producto reconocido</h2>
+        <p>Un producto por pantalla. “✨ La app lo reconoció” porque ya lo compraste antes a este proveedor. Se puede cambiar la cantidad o el precio si la IA leyó mal.</p>
+        <div class="imagenes">
+          <figure class="celular"><img src="05-revisar-reconocido.png" alt="Revisar: producto reconocido en celular" loading="lazy"><figcaption>Celular</figcaption></figure>
+          
+        </div>
+      </article>
+
+      <article class="tarjeta">
+        <h2><span class="numero">6</span> Revisar: producto que no tienes</h2>
+        <p>Si es algo que nunca habías comprado (maní salado), la app propone “Es un producto nuevo”.</p>
+        <div class="imagenes">
+          <figure class="celular"><img src="06-revisar-nuevo.png" alt="Revisar: producto que no tienes en celular" loading="lazy"><figcaption>Celular</figcaption></figure>
+          
+        </div>
+      </article>
+
+      <article class="tarjeta">
+        <h2><span class="numero">7</span> Agregar el producto nuevo</h2>
+        <p>Nombre, categoría y a cuánto lo venderás. La app sugiere el precio con tu margen objetivo: “Te costó $890. Con tu margen de 35% sugerimos $1.370”.</p>
+        <div class="imagenes">
+          <figure class="celular"><img src="07-producto-nuevo.png" alt="Agregar el producto nuevo en celular" loading="lazy"><figcaption>Celular</figcaption></figure>
+          
+        </div>
+      </article>
+
+      <article class="tarjeta">
+        <h2><span class="numero">8</span> Último paso: lo que se va a sumar</h2>
+        <p>Todo lo que se sumará a tu stock, con el total. Si la suma no coincide con el total de la boleta, la app avisa. Tocando un producto se puede corregir.</p>
+        <div class="imagenes">
+          <figure class="celular"><img src="08-resumen.png" alt="Último paso: lo que se va a sumar en celular" loading="lazy"><figcaption>Celular</figcaption></figure>
+          
+        </div>
+      </article>
+
+      <article class="tarjeta">
+        <h2><span class="numero">9</span> En el demo no se guarda</h2>
+        <p>En el Almacén Don Pepe se puede recorrer todo, pero al final no se suma nada. Así el demo siempre queda igual.</p>
+        <div class="imagenes">
+          <figure class="celular"><img src="09-demo-no-guarda.png" alt="En el demo no se guarda en celular" loading="lazy"><figcaption>Celular</figcaption></figure>
+          
+        </div>
+      </article>
+
+      <article class="tarjeta">
+        <h2><span class="numero">10</span> Listo: se sumó al stock</h2>
+        <p>Confirmación visible: “Listo, se sumaron 6 productos a tu stock”. La boleta queda en “Últimas compras” como “Sumada al stock”.</p>
+        <div class="imagenes">
+          <figure class="celular"><img src="10-sumado.png" alt="Listo: se sumó al stock en celular" loading="lazy"><figcaption>Celular</figcaption></figure>
+          
+        </div>
+      </article>
+
+      <article class="tarjeta">
+        <h2><span class="numero">11</span> El stock ya cambió</h2>
+        <p>En la ficha del arroz aparece la compra (“Lo que compré +10”) y el nuevo stock. El costo se recalcula solo.</p>
+        <div class="imagenes">
+          <figure class="celular"><img src="11-stock-actualizado.png" alt="El stock ya cambió en celular" loading="lazy"><figcaption>Celular</figcaption></figure>
+          
+        </div>
+      </article>
+
+      <article class="tarjeta">
+        <h2><span class="numero">12</span> Una compra ya sumada</h2>
+        <p>Cada compra confirmada queda guardada con sus productos y su foto (en un espacio privado, con enlaces que vencen).</p>
+        <div class="imagenes">
+          <figure class="celular"><img src="12-boleta-sumada.png" alt="Una compra ya sumada en celular" loading="lazy"><figcaption>Celular</figcaption></figure>
+          
+        </div>
+      </article>
+
+      <article class="tarjeta">
+        <h2><span class="numero">13</span> Ingresar una compra a mano</h2>
+        <p>Si no hay foto (o la IA no pudo leerla), se puede ingresar a mano con los mismos pasos.</p>
+        <div class="imagenes">
+          <figure class="celular"><img src="13-a-mano.png" alt="Ingresar una compra a mano en celular" loading="lazy"><figcaption>Celular</figcaption></figure>
+          
+        </div>
+      </article>
+
+      <article class="tarjeta">
+        <h2><span class="numero">14</span> Mi stock con las compras</h2>
+        <p>“Mi stock” ahora avisa si hay boletas por revisar y muestra la última compra.</p>
+        <div class="imagenes">
+          <figure class="celular"><img src="14-mi-stock-compras.png" alt="Mi stock con las compras en celular" loading="lazy"><figcaption>Celular</figcaption></figure>
+          
+        </div>
+      </article>
+</main>
+<footer>Capturas tomadas automáticamente el 17-11-2026.</footer>
+</body>
+</html>

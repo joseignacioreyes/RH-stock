@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <rect width="512" height="512" rx="112" fill="#0F766E"/>
+  <!-- tapas de la caja -->
+  <path d="M120 214 L256 214 L222 162 L104 176 Z" fill="#CCEFE9"/>
+  <path d="M392 214 L256 214 L290 162 L408 176 Z" fill="#CCEFE9"/>
+  <!-- cuerpo de la caja -->
+  <rect x="120" y="208" width="272" height="196" rx="20" fill="#FFFFFF"/>
+  <!-- cinta -->
+  <rect x="232" y="208" width="48" height="74" fill="#FBBF24"/>
+  <!-- barras de stock dentro de la caja -->
+  <rect x="164" y="326" width="40" height="46" rx="8" fill="#0F766E"/>
+  <rect x="236" y="306" width="40" height="66" rx="8" fill="#0F766E"/>
+  <rect x="308" y="286" width="40" height="86" rx="8" fill="#0F766E"/>
+</svg>

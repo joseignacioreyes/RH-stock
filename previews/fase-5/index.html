@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="es-CL">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Revisión Fase 5: Suscripciones y pagos | RH Stock</title>
+<style>
+  :root { --marca:#0F766E; --texto:#1F2937; --suave:#4B5563; --fondo:#F3F4F6; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--fondo); color:var(--texto); font:18px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  header { background:var(--marca); color:#fff; padding:24px 16px; }
+  header h1 { margin:0; font-size:28px; }
+  header p { margin:8px 0 0; max-width:720px; }
+  main { max-width:1100px; margin:0 auto; padding:16px; display:grid; gap:24px; }
+  .tarjeta { background:#fff; border-radius:16px; padding:20px; box-shadow:0 1px 3px rgb(0 0 0 / .08); }
+  .tarjeta h2 { margin:0 0 8px; font-size:22px; display:flex; align-items:center; gap:12px; }
+  .numero { display:inline-flex; align-items:center; justify-content:center; width:36px; height:36px; border-radius:50%; background:var(--marca); color:#fff; font-size:18px; flex-shrink:0; }
+  .tarjeta p { margin:0 0 16px; color:var(--suave); }
+  .imagenes { display:flex; flex-wrap:wrap; gap:20px; align-items:flex-start; }
+  figure { margin:0; }
+  figcaption { text-align:center; color:var(--suave); font-size:16px; margin-top:6px; }
+  img { display:block; max-width:100%; height:auto; border:1px solid #E5E7EB; border-radius:12px; }
+  .celular img { width:300px; }
+  video { display:block; max-width:100%; border-radius:12px; border:1px solid #E5E7EB; }
+  .escritorio { flex:1 1 480px; }
+  footer { text-align:center; color:var(--suave); font-size:16px; padding:24px 16px 40px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>RH Stock · Fase 5: Suscripciones y pagos</h1>
+  <p>Cada negocio tiene un plan: piloto gratis o mensual de $30.000 con IVA incluido. Tres días antes del vencimiento se avisa; el dueño ve los datos para transferir, los copia con un botón y sube la captura o el PDF del comprobante (la IA lee monto, fecha y banco). José lo confirma con un clic desde su panel. Con más de 10 días de atraso, la app queda solo para mirar hasta que se confirme el pago; nunca se borra nada. Los datos de la cuenta son de ejemplo hasta que tengas la de la SpA.</p>
+</header>
+<main>
+<article class="tarjeta"><h2><span class="numero">▶</span> Video del recorrido</h2><p>El recorrido principal de la fase, como lo haría un almacenero.</p><video src="recorrido.webm" controls muted playsinline width="300"></video></article>
+
+      <article class="tarjeta">
+        <h2><span class="numero">1</span> Mi plan, en el piloto gratis</h2>
+        <p>Así lo ven los almacenes del piloto: no pagan nada hasta que tú cambies su plan. Se entra por Más → Mi plan y pagos.</p>
+        <div class="imagenes">
+          <figure class="celular"><img src="01-mi-plan-piloto.png" alt="Mi plan, en el piloto gratis en celular" loading="lazy"><figcaption>Celular</figcaption></figure>
+          
+        </div>
+      </article>
+
+      <article class="tarjeta">
+        <h2><span class="numero">2</span> Inicio: el pago vence en 2 días</h2>
+        <p>Tres días antes del vencimiento aparece esta tarjeta en el inicio (y un aviso en Avisos). Al tocarla, lleva a “Mi plan”.</p>
+        <div class="imagenes">
+          <figure class="celular"><img src="02-inicio-pago-por-vencer.png" alt="Inicio: el pago vence en 2 días en celular" loading="lazy"><figcaption>Celular</figcaption></figure>
+          
+        </div>
+      </article>
+
+      <article class="tarjeta">
+        <h2><span class="numero">3</span> Mi plan: cómo pagar</h2>
+        <p>Paso 1: los datos de la cuenta, con un botón “Copiar datos” para pegarlos en la app del banco. Paso 2: “Ya pagué: subir comprobante”. (La cuenta es de ejemplo hasta que me des la de la SpA.)</p>
+        <div class="imagenes">
+          <figure class="celular"><img src="03-mi-plan-como-pagar.png" alt="Mi plan: cómo pagar en celular" loading="lazy"><figcaption>Celular</figcaption></figure>
+          
+        </div>
+      </article>
+
+      <article class="tarjeta">
+        <h2><span class="numero">4</span> Subir el comprobante</h2>
+        <p>Se elige la captura de pantalla o el PDF del banco (o se le saca una foto). Se envía solo.</p>
+        <div class="imagenes">
+          <figure class="celular"><img src="04-subir-comprobante.png" alt="Subir el comprobante en celular" loading="lazy"><figcaption>Celular</figcaption></figure>
+          
+        </div>
+      </article>
+
+      <article class="tarjeta">
+        <h2><span class="numero">5</span> Revisando el comprobante (cargando)</h2>
+        <p>Mientras la IA lee el comprobante.</p>
+        <div class="imagenes">
+          <figure class="celular"><img src="05-revisando-comprobante.png" alt="Revisando el comprobante (cargando) en celular" loading="lazy"><figcaption>Celular</figcaption></figure>
+          
+        </div>
+      </article>
+
+      <article class="tarjeta">
+        <h2><span class="numero">6</span> Error: la foto salió borrosa</h2>
+        <p>Si no se puede leer, pide otra foto con un mensaje simple. No se guarda nada.</p>
+        <div class="imagenes">
+          <figure class="celular"><img src="06-comprobante-borroso.png" alt="Error: la foto salió borrosa en celular" loading="lazy"><figcaption>Celular</figcaption></figure>
+          
+        </div>
+      </article>
+
+      <article class="tarjeta">
+        <h2><span class="numero">7</span> Listo: comprobante recibido</h2>
+        <p>Confirma lo que leyó (monto, fecha y banco) y queda “En revisión” hasta que tú lo confirmes. Si el monto no coincide con el plan, se lo advierte.</p>
+        <div class="imagenes">
+          <figure class="celular"><img src="07-comprobante-recibido.png" alt="Listo: comprobante recibido en celular" loading="lazy"><figcaption>Celular</figcaption></figure>
+          
+        </div>
+      </article>
+
+      <article class="tarjeta">
+        <h2><span class="numero">8</span> Pago atrasado</h2>
+        <p>Pasado el vencimiento, una franja arriba avisa desde qué día la app quedará solo para mirar, con el botón “Pagar”.</p>
+        <div class="imagenes">
+          <figure class="celular"><img src="08-pago-atrasado.png" alt="Pago atrasado en celular" loading="lazy"><figcaption>Celular</figcaption></figure>
+          
+        </div>
+      </article>
+
+      <article class="tarjeta">
+        <h2><span class="numero">9</span> Más de 10 días de atraso: solo para mirar</h2>
+        <p>Franja roja arriba. Puede ver todo (stock, avisos, descargar a Excel), pero no registrar compras ni ventas hasta que confirmes el pago. Nunca se borra nada.</p>
+        <div class="imagenes">
+          <figure class="celular"><img src="09-solo-para-mirar.png" alt="Más de 10 días de atraso: solo para mirar en celular" loading="lazy"><figcaption>Celular</figcaption></figure>
+          
+        </div>
+      </article>
+
+      <article class="tarjeta">
+        <h2><span class="numero">10</span> La caja en pausa</h2>
+        <p>En Vender y Subir boleta explica por qué no se puede y qué hacer. Las ventas que hayan quedado guardadas en el celular se envían solas cuando confirmes el pago.</p>
+        <div class="imagenes">
+          <figure class="celular"><img src="10-vender-pausado.png" alt="La caja en pausa en celular" loading="lazy"><figcaption>Celular</figcaption></figure>
+          
+        </div>
+      </article>
+
+      <article class="tarjeta">
+        <h2><span class="numero">11</span> Avisos de pago</h2>
+        <p>La tarea diaria deja en Avisos el recordatorio, el atraso y el paso a “solo para mirar” (más adelante también por correo y notificación). Los empleados no los ven.</p>
+        <div class="imagenes">
+          <figure class="celular"><img src="11-avisos-de-pago.png" alt="Avisos de pago en celular" loading="lazy"><figcaption>Celular</figcaption></figure>
+          
+        </div>
+      </article>
+
+      <article class="tarjeta">
+        <h2><span class="numero">12</span> Tu panel: pagos por revisar</h2>
+        <p>Arriba, cuánto recibiste este mes y cuántos están atrasados. Cada pago informado muestra el comprobante y lo que leyó la IA. Revisa en tu banco que llegó y aprieta “Confirmar pago”.</p>
+        <div class="imagenes">
+          <figure class="celular"><img src="12-admin-pagos-por-revisar.png" alt="Tu panel: pagos por revisar en celular" loading="lazy"><figcaption>Celular</figcaption></figure>
+          <figure class="escritorio"><img src="12-admin-pagos-por-revisar-escritorio.png" alt="Tu panel: pagos por revisar en computador" loading="lazy"><figcaption>Computador</figcaption></figure>
+        </div>
+      </article>
+
+      <article class="tarjeta">
+        <h2><span class="numero">13</span> Rechazar un pago</h2>
+        <p>Si no llegó la transferencia o el monto no coincide, eliges el motivo con un toque. El dueño lo ve en Avisos y puede subirlo de nuevo.</p>
+        <div class="imagenes">
+          <figure class="celular"><img src="13-admin-rechazar.png" alt="Rechazar un pago en celular" loading="lazy"><figcaption>Celular</figcaption></figure>
+          <figure class="escritorio"><img src="13-admin-rechazar-escritorio.png" alt="Rechazar un pago en computador" loading="lazy"><figcaption>Computador</figcaption></figure>
+        </div>
+      </article>
+
+      <article class="tarjeta">
+        <h2><span class="numero">14</span> Pago confirmado</h2>
+        <p>Con un clic el negocio queda al día, su próximo pago pasa al mes siguiente y le llega el aviso “Recibimos tu pago”.</p>
+        <div class="imagenes">
+          <figure class="celular"><img src="14-admin-pago-confirmado.png" alt="Pago confirmado en celular" loading="lazy"><figcaption>Celular</figcaption></figure>
+          <figure class="escritorio"><img src="14-admin-pago-confirmado-escritorio.png" alt="Pago confirmado en computador" loading="lazy"><figcaption>Computador</figcaption></figure>
+        </div>
+      </article>
+
+      <article class="tarjeta">
+        <h2><span class="numero">15</span> Plan de un negocio</h2>
+        <p>Al tocar un negocio en la lista: cambiar de piloto gratis a mensual (con su precio y el día del primer pago) e historial de pagos con sus comprobantes.</p>
+        <div class="imagenes">
+          <figure class="celular"><img src="15-admin-plan-del-negocio.png" alt="Plan de un negocio en celular" loading="lazy"><figcaption>Celular</figcaption></figure>
+          <figure class="escritorio"><img src="15-admin-plan-del-negocio-escritorio.png" alt="Plan de un negocio en computador" loading="lazy"><figcaption>Computador</figcaption></figure>
+        </div>
+      </article>
+
+      <article class="tarjeta">
+        <h2><span class="numero">16</span> Descargar pagos a Excel</h2>
+        <p>Los pagos confirmados con las mismas columnas de la hoja “Ingresos” de tu planilla de cuentas (neto e IVA ya separados).</p>
+        <div class="imagenes">
+          <figure class="celular"><img src="16-excel-de-pagos.png" alt="Descargar pagos a Excel en celular" loading="lazy"><figcaption>Celular</figcaption></figure>
+          
+        </div>
+      </article>
+</main>
+<footer>Capturas tomadas automáticamente el 17-11-2026.</footer>
+</body>
+</html>

@@ -1,10 +1,33 @@
+# Dependencias
 node_modules/
+
+# Next.js
 .next/
 out/
+build/
+next-env.d.ts
+*.tsbuildinfo
+
+# Claves y secretos: NUNCA se suben a GitHub (solo se sube .env.example)
 .env
 .env.local
 .env*.local
+.env.production
+.env.development
+
+# Vercel
 .vercel/
+
+# Pruebas
+coverage/
+test-results/
+playwright-report/
+
+# Varios
 *.log
+*.pem
 .DS_Store
+
+# Videos de las previsualizaciones (pesan mucho; las capturas PNG sí se suben)
 previews/**/*.webm
+scripts/demo/comprobante-ejemplo.png

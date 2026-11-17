@@ -1,0 +1,52 @@
+{
+  "name": "rh-stock",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "typecheck": "next typegen && tsc --noEmit",
+    "test": "vitest run",
+    "marca": "node scripts/marca/generar-marca.mjs",
+    "capturas": "node --env-file-if-exists=.env.local scripts/capturas.mjs",
+    "test:db": "vitest run --config vitest.db.config.mts",
+    "seed:demo": "node --env-file-if-exists=.env.local scripts/seed-demo.mjs",
+    "cuenta:admin": "node --env-file-if-exists=.env.local scripts/cuentas.mjs admin",
+    "cuenta:enlace-clave": "node --env-file-if-exists=.env.local scripts/cuentas.mjs enlace-clave",
+    "db:tipos": "supabase gen types typescript --local > tipos-db.tmp && (echo \"// Archivo GENERADO con npm run db:tipos. No editar a mano.\" && cat tipos-db.tmp) > src/lib/supabase/tipos-db.ts; rm -f tipos-db.tmp",
+    "produccion:migrar": "node scripts/produccion/migrar.mjs",
+    "demo:boleta": "node scripts/demo/generar-boleta.mjs"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^1.9.0",
+    "@supabase/ssr": "^0.12.7",
+    "@supabase/supabase-js": "^2.119.0",
+    "next": "16.4.6",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "server-only": "^0.0.1",
+    "web-push": "^4.0.0",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@fontsource/poppins": "^5.3.0",
+    "@playwright/test": "1.63.0",
+    "@tailwindcss/turbopack": "4.3.3",
+    "@types/node": "^22.20.5",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "@types/web-push": "^3.6.4",
+    "eslint": "^9",
+    "eslint-config-next": "16.4.6",
+    "opentype.js": "^2.0.0",
+    "supabase": "^2.122.1",
+    "tailwindcss": "4.3.3",
+    "typescript": "^5",
+    "vitest": "^5.1.0"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
