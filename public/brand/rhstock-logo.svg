@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 240" width="860" height="240">
+  <g transform="translate(20,20) scale(0.390625)">
+    <rect width="512" height="512" rx="112" fill="#0F766E"/>
+    <path d="M120 214 L256 214 L222 162 L104 176 Z" fill="#CCEFE9"/>
+    <path d="M392 214 L256 214 L290 162 L408 176 Z" fill="#CCEFE9"/>
+    <rect x="120" y="208" width="272" height="196" rx="20" fill="#FFFFFF"/>
+    <rect x="232" y="208" width="48" height="74" fill="#FBBF24"/>
+    <rect x="164" y="326" width="40" height="46" rx="8" fill="#0F766E"/>
+    <rect x="236" y="306" width="40" height="66" rx="8" fill="#0F766E"/>
+    <rect x="308" y="286" width="40" height="86" rx="8" fill="#0F766E"/>
+  </g>
+  <text x="250" y="138" font-family="Poppins, Nunito, Arial, sans-serif" font-weight="700" font-size="104" fill="#1F2937">RH<tspan dx="24" fill="#0F766E">Stock</tspan></text>
+  <text x="254" y="192" font-family="Poppins, Nunito, Arial, sans-serif" font-weight="400" font-size="34" fill="#4B5563">Tu inventario con una foto</text>
+</svg>
