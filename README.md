@@ -16,10 +16,11 @@ Este proyecto se construye con Claude Code siguiendo `CLAUDE.md`, por fases y co
 | 1. Cuentas y seguridad | ✅ Aprobada |
 | 2. Productos e inventario | ✅ Aprobada |
 | 2b. Modo caja | ✅ Aprobada |
-| 3. Foto de la boleta | 🔍 En revisión ([capturas](previews/fase-3/index.html)); falta probar la lectura real con la clave de Claude |
+| 3. Foto de la boleta | ✅ Aprobada ([capturas](previews/fase-3/index.html)); falta probar la lectura real con la clave de Claude |
+| 4. Avisos y precios | ✅ Aprobada ([capturas](previews/fase-4/index.html)); el envío por correo y push se suma con Resend y Vercel |
+| 5. Suscripciones y pagos | ⏳ Siguiente |
 | 6. Exportar y "Mis datos" | ✅ Aprobada |
-| 7. Piloto | 🔍 En revisión ([guía](docs/fase-7-piloto.md), [capturas](previews/fase-7/index.html)) |
-| 4. Avisos y precios | 🔍 En revisión ([capturas](previews/fase-4/index.html)); el envío por correo y push se suma con Resend y Vercel |
+| 7. Piloto | ✅ Aprobada ([guía](docs/fase-7-piloto.md), [capturas](previews/fase-7/index.html)) |
 
 ## Cuentas necesarias
 
