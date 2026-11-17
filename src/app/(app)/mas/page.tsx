@@ -32,6 +32,9 @@ export default async function PaginaMas({ searchParams }: PageProps<"/mas">) {
       <nav aria-label="Otras opciones" className="mt-6 space-y-3">
         {esDueno && (
           <>
+            <BotonEnlace href="/mas/vendedores" variante="suave" icono="🧑">
+              Vendedores
+            </BotonEnlace>
             <BotonEnlace href="/mas/margenes" variante="suave" icono="📊">
               Cuánto quiero ganar
             </BotonEnlace>

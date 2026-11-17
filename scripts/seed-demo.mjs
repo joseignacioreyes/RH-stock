@@ -8,7 +8,9 @@
 // Fase 1: negocio, dueño, vendedores y categorías.
 // Fase 2: 40 productos y un mes de movimientos de stock (ventas diarias, una merma y un vencido).
 // Fase 3: 3 proveedores, 6 boletas confirmadas (una con alza de costo de más de 5%) y 1 boleta por confirmar con su foto.
-// Las próximas fases suman ventas de la caja y pagos.
+// Fase 2b: las ventas del mes son ventas de verdad (tickets de Carla y Matías) y hay 2 cierres de caja
+//           (uno cuadrado y uno con $1.500 de diferencia).
+// Las próximas fases suman pagos.
 
 import { readFile } from "node:fs/promises";
 import path from "node:path";
@@ -298,7 +300,7 @@ async function crearCompras(empresaId, idProducto, azar) {
   return entradas;
 }
 
-async function crearProductos(empresaId) {
+async function crearProductos(empresaId, idVendedores) {
   const categorias = await ok(admin.from("categorias").select("id, nombre").eq("empresa_id", empresaId), "leer categorías");
   const idCategoria = Object.fromEntries(categorias.map((c) => [c.nombre, c.id]));
   const azar = azarFijo(2026);
@@ -317,6 +319,7 @@ async function crearProductos(empresaId) {
   const compras = await crearCompras(empresaId, idProducto, azar);
 
   const movimientos = [];
+  const lineasVenta = [];
   for (const [, nombre, unidad, , , costo, stockFinal, minimo, perfil] of PRODUCTOS) {
     const productoId = idProducto[nombre];
     const ventas = [];
@@ -349,7 +352,7 @@ async function crearProductos(empresaId) {
       costo_unitario: costo,
       fecha: fechaHace(perfil === "dormido" ? 45 : 35, azar),
     });
-    for (const v of ventas) movimientos.push({ empresa_id: empresaId, producto_id: productoId, tipo: "venta", cantidad: -v.cantidad, fecha: v.fecha });
+    for (const v of ventas) lineasVenta.push({ productoId, cantidad: v.cantidad, precio: PRODUCTOS.find((p) => p[1] === nombre)[4], fecha: v.fecha });
     for (const c of entradas) {
       movimientos.push({
         empresa_id: empresaId,
@@ -364,13 +367,77 @@ async function crearProductos(empresaId) {
     for (const s of salidas) movimientos.push({ empresa_id: empresaId, producto_id: productoId, tipo: "merma", motivo: s.motivo, cantidad: -s.cantidad, fecha: s.fecha });
   }
 
+  // Ventas de verdad: cada día, las líneas se agrupan en tickets de 1 a 3 productos.
+  const ventas = [];
+  const itemsVenta = [];
+  const porDia = new Map();
+  for (const linea of lineasVenta) {
+    const dia = fechaChile(linea.fecha);
+    porDia.set(dia, [...(porDia.get(dia) ?? []), linea]);
+  }
+  const MEDIOS = ["efectivo", "efectivo", "efectivo", "efectivo", "efectivo", "efectivo", "debito", "debito", "credito", "transferencia"];
+  for (const [, lineas] of porDia) {
+    lineas.sort(() => azar() - 0.5);
+    for (let i = 0; i < lineas.length; ) {
+      const tamano = 1 + Math.floor(azar() * 3);
+      const ticket = lineas.slice(i, i + tamano);
+      i += tamano;
+      const fecha = ticket.map((l) => l.fecha).sort()[0];
+      const hora = new Date(fecha).getUTCHours();
+      const venta = {
+        id: crypto.randomUUID(),
+        empresa_id: empresaId,
+        id_local: crypto.randomUUID(),
+        vendedor_id: hora < 17 ? idVendedores.Carla : idVendedores["Matías"], // Carla en la mañana, Matías en la tarde
+        fecha,
+        medio_pago: MEDIOS[Math.floor(azar() * MEDIOS.length)],
+        total: ticket.reduce((t, l) => t + Math.round(l.cantidad * l.precio), 0),
+        sincronizada_en: fecha,
+        created_at: fecha,
+      };
+      ventas.push(venta);
+      for (const l of ticket) {
+        itemsVenta.push({
+          venta_id: venta.id,
+          empresa_id: empresaId,
+          producto_id: l.productoId,
+          cantidad: l.cantidad,
+          precio_unitario: l.precio,
+          total: Math.round(l.cantidad * l.precio),
+          created_at: fecha,
+        });
+        movimientos.push({ empresa_id: empresaId, producto_id: l.productoId, tipo: "venta", cantidad: -l.cantidad, referencia_id: venta.id, fecha });
+      }
+    }
+  }
+  for (let i = 0; i < ventas.length; i += 500) await ok(admin.from("ventas").insert(ventas.slice(i, i + 500)), "registrar ventas");
+  for (let i = 0; i < itemsVenta.length; i += 500) await ok(admin.from("items_venta").insert(itemsVenta.slice(i, i + 500)), "registrar productos vendidos");
+
+  // Cierres de caja de los dos días anteriores: uno cuadrado y otro con $1.500 de diferencia.
+  for (const [dias, diferencia] of [[2, 0], [1, -1500]]) {
+    const dia = fechaChile(new Date(Date.now() - dias * DIA).toISOString());
+    const delDia = ventas.filter((v) => fechaChile(v.fecha) === dia);
+    const efectivo = delDia.filter((v) => v.medio_pago === "efectivo").reduce((t, v) => t + v.total, 0);
+    await ok(
+      admin.from("cierres_caja").insert({
+        empresa_id: empresaId,
+        fecha: dia,
+        total_sistema: delDia.reduce((t, v) => t + v.total, 0),
+        efectivo_sistema: efectivo,
+        efectivo_contado: efectivo + diferencia,
+        diferencia,
+      }),
+      "crear cierre de caja",
+    );
+  }
+
   // En orden de fecha, como pasaron.
   movimientos.sort((a, b) => a.fecha.localeCompare(b.fecha));
   for (let i = 0; i < movimientos.length; i += 500) {
     await ok(admin.from("movimientos_stock").insert(movimientos.slice(i, i + 500)), "registrar movimientos");
   }
   if (movimientos.some((m) => m.motivo === "stock_inicial" && m.cantidad <= 0)) throw new Error("Hay un stock inicial negativo: revisa las compras del demo");
-  return { productos: creados.length, movimientos: movimientos.length, compras: COMPRAS.length };
+  return { productos: creados.length, movimientos: movimientos.length, compras: COMPRAS.length, ventas: ventas.length };
 }
 
 async function main() {
@@ -405,12 +472,16 @@ async function main() {
     "marcar como negocio de ejemplo",
   );
 
+  const idVendedores = {};
   for (const vendedor of DEMO.vendedores) {
-    await ok(admin.rpc("crear_vendedor", { p_empresa_id: empresaId, p_nombre: vendedor.nombre, p_pin: vendedor.pin }), `crear vendedor ${vendedor.nombre}`);
+    idVendedores[vendedor.nombre] = await ok(
+      admin.rpc("crear_vendedor", { p_empresa_id: empresaId, p_nombre: vendedor.nombre, p_pin: vendedor.pin }),
+      `crear vendedor ${vendedor.nombre}`,
+    );
   }
 
   const categorias = await ok(admin.from("categorias").select("id", { count: "exact", head: false }).eq("empresa_id", empresaId), "contar categorías");
-  const inventario = await crearProductos(empresaId);
+  const inventario = await crearProductos(empresaId, idVendedores);
 
   console.log("✓ Negocio: Almacén Don Pepe (RUT 76.543.210-3), solo para mirar");
   console.log("✓ Dueño: Pepe Demo (RUT 12.345.678-5)");
@@ -418,6 +489,7 @@ async function main() {
   console.log(`✓ Categorías: ${categorias.length}`);
   console.log(`✓ Productos: ${inventario.productos}, con ${inventario.movimientos} movimientos del último mes`);
   console.log(`✓ Compras: ${inventario.compras} boletas confirmadas y 1 por confirmar (con foto)`);
+  console.log(`✓ Ventas: ${inventario.ventas} ventas de Carla y Matías en el mes, y 2 cierres de caja`);
 }
 
 main().catch((error) => {

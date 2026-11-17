@@ -102,6 +102,38 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"cierres_caja": {
+                  Row: {
+                    "created_at": string,"diferencia": number,"efectivo_contado": number,"efectivo_sistema": number,"empresa_id": string,"fecha": string,"id": string,"total_sistema": number,"updated_at": string,"usuario_id": string | null,"vendedor_id": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"diferencia": number,"efectivo_contado": number,"efectivo_sistema": number,"empresa_id": string,"fecha": string,"id"?: string,"total_sistema": number,"updated_at"?: string,"usuario_id"?: string | null,"vendedor_id"?: string | null
+                  }
+                  Update: {
+                    "created_at"?: string,"diferencia"?: number,"efectivo_contado"?: number,"efectivo_sistema"?: number,"empresa_id"?: string,"fecha"?: string,"id"?: string,"total_sistema"?: number,"updated_at"?: string,"usuario_id"?: string | null,"vendedor_id"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "cierres_caja_empresa_id_fkey"
+      columns: ["empresa_id"]
+isOneToOne: false
+      referencedRelation: "empresas"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "cierres_caja_usuario_id_fkey"
+      columns: ["usuario_id"]
+isOneToOne: false
+      referencedRelation: "usuarios"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "cierres_caja_vendedor_id_fkey"
+      columns: ["vendedor_id"]
+isOneToOne: false
+      referencedRelation: "vendedores"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"consentimientos": {
                   Row: {
                     "aceptado": boolean,"created_at": string,"fecha": string,"id": string,"ip": string | null,"tipo": string,"updated_at": string,"usuario_id": string,"version": string
@@ -206,6 +238,38 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"items_venta": {
+                  Row: {
+                    "cantidad": number,"created_at": string,"empresa_id": string,"id": string,"precio_unitario": number,"producto_id": string | null,"total": number,"updated_at": string,"venta_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "cantidad": number,"created_at"?: string,"empresa_id": string,"id"?: string,"precio_unitario": number,"producto_id"?: string | null,"total": number,"updated_at"?: string,"venta_id": string
+                  }
+                  Update: {
+                    "cantidad"?: number,"created_at"?: string,"empresa_id"?: string,"id"?: string,"precio_unitario"?: number,"producto_id"?: string | null,"total"?: number,"updated_at"?: string,"venta_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "items_venta_empresa_id_fkey"
+      columns: ["empresa_id"]
+isOneToOne: false
+      referencedRelation: "empresas"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "items_venta_producto_id_fkey"
+      columns: ["producto_id"]
+isOneToOne: false
+      referencedRelation: "productos"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "items_venta_venta_id_fkey"
+      columns: ["venta_id"]
+isOneToOne: false
+      referencedRelation: "ventas"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"movimientos_stock": {
                   Row: {
                     "cantidad": number,"costo_unitario": number | null,"created_at": string,"empresa_id": string,"fecha": string,"id": string,"motivo": string | null,"producto_id": string,"referencia_id": string | null,"tipo": string,"updated_at": string,"usuario_id": string | null
@@ -306,14 +370,14 @@ isOneToOne: false
                   ]
                 },"vendedores": {
                   Row: {
-                    "activo": boolean,"created_at": string,"empresa_id": string,"id": string,"nombre": string,"pin_hash": string,"updated_at": string
+                    "activo": boolean,"bloqueado_hasta": string | null,"created_at": string,"empresa_id": string,"id": string,"intentos_fallidos": number,"nombre": string,"pin_hash": string,"updated_at": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "activo"?: boolean,"created_at"?: string,"empresa_id": string,"id"?: string,"nombre": string,"pin_hash": string,"updated_at"?: string
+                    "activo"?: boolean,"bloqueado_hasta"?: string | null,"created_at"?: string,"empresa_id": string,"id"?: string,"intentos_fallidos"?: number,"nombre": string,"pin_hash": string,"updated_at"?: string
                   }
                   Update: {
-                    "activo"?: boolean,"created_at"?: string,"empresa_id"?: string,"id"?: string,"nombre"?: string,"pin_hash"?: string,"updated_at"?: string
+                    "activo"?: boolean,"bloqueado_hasta"?: string | null,"created_at"?: string,"empresa_id"?: string,"id"?: string,"intentos_fallidos"?: number,"nombre"?: string,"pin_hash"?: string,"updated_at"?: string
                   }
                   Relationships: [
                     {
@@ -324,13 +388,51 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"ventas": {
+                  Row: {
+                    "created_at": string,"empresa_id": string,"fecha": string,"id": string,"id_local": string,"medio_pago": string,"sincronizada_en": string,"total": number,"updated_at": string,"usuario_id": string | null,"vendedor_id": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"empresa_id": string,"fecha": string,"id"?: string,"id_local": string,"medio_pago": string,"sincronizada_en"?: string,"total": number,"updated_at"?: string,"usuario_id"?: string | null,"vendedor_id"?: string | null
+                  }
+                  Update: {
+                    "created_at"?: string,"empresa_id"?: string,"fecha"?: string,"id"?: string,"id_local"?: string,"medio_pago"?: string,"sincronizada_en"?: string,"total"?: number,"updated_at"?: string,"usuario_id"?: string | null,"vendedor_id"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "ventas_empresa_id_fkey"
+      columns: ["empresa_id"]
+isOneToOne: false
+      referencedRelation: "empresas"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "ventas_usuario_id_fkey"
+      columns: ["usuario_id"]
+isOneToOne: false
+      referencedRelation: "usuarios"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "ventas_vendedor_id_fkey"
+      columns: ["vendedor_id"]
+isOneToOne: false
+      referencedRelation: "vendedores"
+      referencedColumns: ["id"]
+    }
+                  ]
                 }
           }
           Views: {
             [_ in never]: never
           }
           Functions: {
-            "confirmar_documento":
+            "agregar_vendedor":
+{ Args: { "p_nombre": string,"p_pin": string }; Returns: string
+                           },
+"cerrar_caja":
+{ Args: { "p_efectivo_contado": number,"p_fecha": string }; Returns: string
+                           },
+"confirmar_documento":
 { Args: { "p_datos": Json,"p_documento_id": string }; Returns: number
                            },
 "costo_promedio_ponderado":
@@ -358,6 +460,11 @@ isOneToOne: false
                            },
 "es_admin":
 { Args: Record<PropertyKey, never>; Returns: boolean
+                           },
+"mas_vendidos":
+{ Args: { "p_limite"?: number }; Returns: {
+              "producto_id": string,"veces": number
+            }[]
                            },
 "mi_empresa_id":
 { Args: Record<PropertyKey, never>; Returns: string
@@ -388,6 +495,12 @@ isOneToOne: false
                            },
 "registrar_salida":
 { Args: { "p_cantidad": number,"p_motivo": string,"p_producto_id": string }; Returns: undefined
+                           },
+"registrar_venta":
+{ Args: { "p_venta": Json }; Returns: string
+                           },
+"verificar_pin":
+{ Args: { "p_pin": string,"p_vendedor_id": string }; Returns: string
                            }
           }
           Enums: {

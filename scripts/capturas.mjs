@@ -807,6 +807,193 @@ const PANTALLAS = {
       },
     ],
   },
+
+  "2b": {
+    titulo: "Fase 2b: Modo caja",
+    resumen:
+      "Vender en menos de 3 segundos: botones grandes de “Más vendidos”, buscador que también recibe el lector USB, escáner con la cámara, pan y fruta por pesos o por kilos, y cobrar con un toque. Cada vendedor entra con su PIN. Sin internet, las ventas se guardan en el celular y se envían solas después, sin duplicarse. Al final del día, el cierre de caja.",
+    preparar: prepararFase2b,
+    recorrido: async (pagina) => {
+      await entrarComo(pagina, ROSA.rut, ROSA.clave);
+      await pagina.waitForURL("**/inicio");
+      await pausa(pagina);
+      await pagina.getByRole("link", { name: /Vender/ }).click();
+      await pagina.waitForURL("**/vender");
+      await pausa(pagina, 1500);
+      await pagina.getByRole("button", { name: /Bebida cola 1,5 L \$/ }).click();
+      await pausa(pagina, 600);
+      await pagina.getByRole("button", { name: /Bebida cola 1,5 L \$/ }).click();
+      await pausa(pagina, 800);
+      await pagina.getByRole("button", { name: /Pan marraqueta \(kg\) \$/ }).click();
+      await pausa(pagina, 1200);
+      await pagina.getByRole("button", { name: "$1.000" }).click();
+      await pausa(pagina, 1200);
+      await pagina.getByRole("button", { name: /Cobrar \$/ }).click();
+      await pausa(pagina, 1200);
+      await pagina.getByRole("button", { name: /Efectivo/ }).click();
+      await pagina.getByText("Venta guardada").waitFor();
+      await pausa(pagina, 2000);
+      await pagina.context().setOffline(true);
+      await pausa(pagina, 1200);
+      await pagina.getByRole("button", { name: /Leche entera 1 L \$/ }).click();
+      await pagina.getByRole("button", { name: /Cobrar \$/ }).click();
+      await pagina.getByRole("button", { name: /Débito/ }).click();
+      await pagina.getByText("Se enviará sola").waitFor();
+      await pausa(pagina, 2500);
+      await pagina.context().setOffline(false);
+      await pagina.getByText("Con internet").waitFor();
+      await pausa(pagina, 2500);
+    },
+    pantallas: [
+      {
+        archivo: "01-quien-vende",
+        ruta: "/",
+        titulo: "¿Quién vende?",
+        descripcion: "Si el negocio tiene vendedores, la caja pregunta quién vende. Nadie escribe RUT ni clave.",
+        pasos: async (pagina) => {
+          await entrarAlDemo(pagina);
+          await pagina.getByRole("link", { name: /Vender/ }).click();
+          await pagina.getByRole("heading", { name: "¿Quién vende?" }).waitFor();
+        },
+      },
+      {
+        archivo: "02-pin",
+        ruta: "/",
+        titulo: "PIN de 4 números",
+        descripcion: "Teclado grande. Tras 5 intentos fallidos se bloquea 5 minutos.",
+        pasos: async (pagina) => {
+          await entrarAlDemo(pagina);
+          await pagina.goto(URL_APP + "/vender");
+          await pagina.getByRole("button", { name: /Carla/ }).click();
+          await pagina.getByRole("button", { name: "1", exact: true }).click();
+          await pagina.getByRole("button", { name: "1", exact: true }).click();
+        },
+      },
+      {
+        archivo: "03-caja",
+        ruta: "/",
+        titulo: "La caja",
+        descripcion:
+          "Arriba: quién vende y si hay internet. Buscador (también recibe el lector USB: lee el código y aprieta Enter solo) y “Escanear”. Abajo, los más vendidos: un toque = 1 unidad. El botón “Cobrar” queda siempre a mano.",
+        pasos: async (pagina) => {
+          await entrarDemoACaja(pagina);
+        },
+      },
+      {
+        archivo: "04-granel",
+        ruta: "/",
+        titulo: "Pan, fruta y fiambre",
+        descripcion: "Los productos por kilo se venden por pesos (“$1.000 de pan”) o por kilos, con botones rápidos.",
+        pasos: async (pagina) => {
+          await entrarDemoACaja(pagina);
+          await pagina.getByRole("button", { name: /Pan marraqueta \(kg\) \$/ }).click();
+        },
+      },
+      {
+        archivo: "05-carrito",
+        ruta: "/",
+        titulo: "Esta venta",
+        descripcion: "Lo que se va sumando, con − y + para corregir. Dos toques a la bebida = 2 bebidas.",
+        pasos: async (pagina) => {
+          await entrarDemoACaja(pagina);
+          await pagina.getByRole("button", { name: /Bebida cola 1,5 L \$/ }).click();
+          await pagina.getByRole("button", { name: /Bebida cola 1,5 L \$/ }).click();
+          await pagina.getByRole("button", { name: /Pan marraqueta \(kg\) \$/ }).click();
+          await pagina.getByRole("button", { name: "$1.000" }).click();
+        },
+      },
+      {
+        archivo: "06-escaner",
+        ruta: "/",
+        titulo: "Escanear con la cámara",
+        descripcion: "Apuntas al código de barras y suena un pitido: el producto se suma solo. Se puede seguir escaneando. (En la captura, la cámara es simulada.)",
+        pasos: async (pagina) => {
+          await pagina.addInitScript(() => {
+            let llamadas = 0;
+            window.BarcodeDetector = class {
+              async detect() {
+                llamadas++;
+                return llamadas === 4 ? [{ rawValue: "2000000000015" }] : [];
+              }
+            };
+          });
+          await entrarDemoACaja(pagina);
+          await pagina.getByRole("button", { name: /Escanear/ }).click();
+          await pagina.getByText(/agregado/).waitFor({ timeout: 15_000 });
+        },
+        sinEsperar: true,
+        soloPantalla: true,
+      },
+      {
+        archivo: "07-cobrar",
+        ruta: "/",
+        titulo: "Cobrar",
+        descripcion: "Total grande y cuatro botones: efectivo, débito, crédito o transferencia. Un toque y la venta queda guardada (y el stock descontado).",
+        pasos: async (pagina) => {
+          await entrarDemoACaja(pagina);
+          await pagina.getByRole("button", { name: /Bebida cola 1,5 L \$/ }).click();
+          await pagina.getByRole("button", { name: /Leche entera 1 L \$/ }).click();
+          await pagina.getByRole("button", { name: /Cobrar \$/ }).click();
+        },
+      },
+      {
+        archivo: "08-vendido",
+        ruta: "/",
+        titulo: "Venta guardada",
+        descripcion: "Confirmación visible y la caja queda lista para la siguiente venta.",
+        pasos: async (pagina) => {
+          await entrarComo(pagina, ROSA.rut, ROSA.clave);
+          await pagina.waitForURL("**/inicio");
+          await pagina.goto(URL_APP + "/vender");
+          await pagina.getByRole("button", { name: /Bebida cola 1,5 L \$/ }).click();
+          await pagina.getByRole("button", { name: /Cobrar \$/ }).click();
+          await pagina.getByRole("button", { name: /Efectivo/ }).click();
+          await pagina.getByText("Venta guardada").waitFor();
+        },
+        sinEsperar: true,
+      },
+      {
+        archivo: "09-sin-internet",
+        ruta: "/",
+        titulo: "Sin internet",
+        descripcion: "Si se corta internet, se sigue vendiendo: arriba aparece en naranjo y las ventas quedan guardadas en el celular.",
+        pasos: async (pagina) => {
+          await entrarComo(pagina, ROSA.rut, ROSA.clave);
+          await pagina.waitForURL("**/inicio");
+          await pagina.goto(URL_APP + "/vender");
+          await pagina.context().setOffline(true);
+          await pagina.getByRole("button", { name: /Leche entera 1 L \$/ }).click();
+          await pagina.getByRole("button", { name: /Cobrar \$/ }).click();
+          await pagina.getByRole("button", { name: /Débito/ }).click();
+          await pagina.getByText("Se enviará sola").waitFor();
+        },
+        sinEsperar: true,
+      },
+      {
+        archivo: "10-cierre",
+        ruta: "/",
+        titulo: "Cierre de caja",
+        descripcion:
+          "Lo vendido hoy por medio de pago y por vendedor. Escribes el efectivo que contaste y la app dice si cuadra o cuánto falta. Abajo, los cierres anteriores (uno cuadró y en otro faltaron $1.500).",
+        pasos: async (pagina) => {
+          await entrarAlDemo(pagina);
+          await pagina.goto(URL_APP + "/vender/cierre");
+          const contado = pagina.getByLabel("¿Cuánto efectivo contaste?");
+          await contado.fill("0");
+        },
+      },
+      {
+        archivo: "11-vendedores",
+        ruta: "/",
+        titulo: "Vendedores (en Más)",
+        descripcion: "El dueño agrega vendedores con su PIN o los desactiva (pregunta antes). Sus ventas quedan guardadas.",
+        pasos: async (pagina) => {
+          await entrarAlDemo(pagina);
+          await pagina.goto(URL_APP + "/mas/vendedores");
+        },
+      },
+    ],
+  },
 };
 
 // ---------------------------------------------------------------------------
@@ -1065,6 +1252,21 @@ async function prepararFase4() {
     .insert({ empresa_id: rosa.empresa_id, producto_id: aceite.id, tipo: "compra", cantidad: 6, costo_unitario: 2550 });
 }
 
+
+async function prepararFase2b() {
+  const admin = clienteAdminLocal();
+  await negocioDePrueba(admin, ROSA, PRODUCTOS_ROSA);
+}
+
+/** Entra al demo, elige a Carla y escribe su PIN (1111). */
+async function entrarDemoACaja(pagina) {
+  await entrarAlDemo(pagina);
+  await pagina.goto(URL_APP + "/vender");
+  await pagina.getByRole("button", { name: /Carla/ }).click();
+  for (let i = 0; i < 4; i++) await pagina.getByRole("button", { name: "1", exact: true }).click();
+  await pagina.getByRole("heading", { name: "Más vendidos" }).waitFor();
+}
+
 const escaparHtml = (texto) =>
   String(texto).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
 
@@ -1086,7 +1288,7 @@ async function capturar(navegador, carpeta, pantalla, tamano, sufijo, escala) {
     if (pantalla.sinEsperar) {
       await pagina.evaluate(() => document.fonts.ready);
       const archivo = `${pantalla.archivo}${sufijo}.png`;
-      await pagina.screenshot({ path: path.join(carpeta, archivo), fullPage: true });
+      await pagina.screenshot({ path: path.join(carpeta, archivo), fullPage: !pantalla.soloPantalla });
       await contexto.close();
       return archivo;
     }
@@ -1197,7 +1399,8 @@ async function main() {
 
   if (config.preparar) await config.preparar();
 
-  const navegador = await chromium.launch();
+  // Cámara simulada (para la captura del escáner de la caja).
+  const navegador = await chromium.launch({ args: ["--use-fake-ui-for-media-stream", "--use-fake-device-for-media-stream"] });
   const capturas = [];
   let video = null;
   try {

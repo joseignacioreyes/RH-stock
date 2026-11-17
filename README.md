@@ -15,7 +15,7 @@ Este proyecto se construye con Claude Code siguiendo `CLAUDE.md`, por fases y co
 | 0. Preparación | ✅ Aprobada |
 | 1. Cuentas y seguridad | ✅ Aprobada |
 | 2. Productos e inventario | ✅ Aprobada |
-| 2b. Modo caja | Pendiente (se hará después de la Fase 3) |
+| 2b. Modo caja | 🔍 En revisión ([capturas](previews/fase-2b/index.html)) |
 | 3. Foto de la boleta | 🔍 En revisión ([capturas](previews/fase-3/index.html)); falta probar la lectura real con la clave de Claude |
 | 4. Avisos y precios | 🔍 En revisión ([capturas](previews/fase-4/index.html)); el envío por correo y push se suma con Resend y Vercel |
 
@@ -73,6 +73,7 @@ Están documentadas en [`.env.example`](.env.example). En tu computador van en `
 - **Nadie edita el stock a mano.** El stock solo cambia con movimientos (`movimientos_stock`: compra, venta, ajuste, merma), que no se pueden cambiar ni borrar. `productos.stock_actual` y `costo_promedio` se actualizan solos con cada movimiento (costo promedio ponderado).
 - **Boletas:** la foto se guarda en el espacio privado `boletas` (carpeta por negocio, enlaces firmados que vencen). La IA (`claude-haiku-5-5`, en `src/lib/lector-boletas/`) lee la foto con un esquema fijo validado con Zod; si falla dos veces, la boleta queda para revisión manual. El stock se suma solo al confirmar (`confirmar_documento`, todo o nada) y la app aprende la asociación descripción → producto (`alias_productos`).
 - **Avisos:** se crean solos con cada movimiento (`alertas`): "se está acabando" al cruzar el mínimo (y se resuelve al reponer) y cambios de costo de compra mayores al % de `empresas.umbral_aviso_costo` (5% por defecto), con el precio sugerido por el margen de la categoría.
+- **Caja:** `registrar_venta` guarda la venta y descuenta el stock en una sola operación; cada venta lleva un `id_local` generado en el celular y la base no acepta dos iguales (sin duplicados al sincronizar). Sin internet, las ventas quedan en IndexedDB (`src/lib/caja/`) y `public/sw.js` permite abrir `/vender` sin conexión. El escáner usa el `BarcodeDetector` de Chrome en Android.
 - Los empleados no ven costos: el dueño los obtiene con la función `costos_de_mi_negocio()`.
 - Las personas entran con RUT y clave. Por dentro, Supabase Auth usa un correo interno armado con el RUT (`12345678-5@cuentas.rhstock.cl`); el correo real queda en la tabla `usuarios` y se usa solo para recuperar la clave.
 - En el Supabase de producción: **Authentication → Sign In / Providers → desactivar "Allow new users to sign up"** (las cuentas las crea solo la app).
