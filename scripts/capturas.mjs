@@ -674,6 +674,139 @@ const PANTALLAS = {
       },
     ],
   },
+
+  4: {
+    titulo: "Fase 4: Avisos y precios",
+    resumen:
+      "Los avisos se crean solos: cuando algo se está acabando y cuando una compra cambia el costo más del porcentaje que elegiste. Cada aviso de costo trae el precio sugerido explicado en una frase, con un botón para usarlo. El margen de cada categoría y el porcentaje del aviso se cambian en “Más”. (El envío por correo y al celular se suma cuando estén las cuentas de correo y Vercel.)",
+    preparar: prepararFase4,
+    recorrido: async (pagina) => {
+      await prepararFase4(); // las capturas anteriores marcaron los avisos como vistos
+      await entrarComo(pagina, ROSA.rut, ROSA.clave);
+      await pagina.waitForURL("**/inicio");
+      await pausa(pagina, 1800);
+      await pagina.getByRole("link", { name: /Avisos/ }).click();
+      await pagina.waitForURL("**/avisos");
+      await pausa(pagina, 2200);
+      await pagina.getByRole("button", { name: /Ver precio sugerido/ }).first().click();
+      await pagina.waitForURL("**/mi-stock/productos/**");
+      await pausa(pagina, 2200);
+      await pagina.getByRole("button", { name: /^Usar \$/ }).first().click();
+      await pagina.waitForURL("**listo=precio**");
+      await pausa(pagina, 2500);
+    },
+    pantallas: [
+      {
+        archivo: "01-inicio-con-avisos",
+        ruta: "/",
+        titulo: "Inicio con avisos",
+        descripcion: "El botón “Avisos” muestra en rojo cuántos avisos nuevos hay.",
+        pasos: entrarAlDemo,
+      },
+      {
+        archivo: "02-avisos",
+        ruta: "/",
+        titulo: "Avisos",
+        descripcion:
+          "Tarjetas simples: en rojo lo que se está acabando (con lo que queda hoy) y en amarillo el alza de costo de las galletas con el precio sugerido. Cada una tiene un botón para ir al producto.",
+        pasos: async (pagina) => {
+          await entrarAlDemo(pagina);
+          await pagina.goto(URL_APP + "/avisos");
+        },
+      },
+      {
+        archivo: "03-aviso-de-costo",
+        ruta: "/",
+        titulo: "Del aviso al precio sugerido",
+        descripcion:
+          "Al tocar el aviso de costo se abre el producto con el aviso arriba: “Tu costo subió de $480 a $520 (+8,3%). Con tu margen objetivo de 35%, el precio sugerido es $800”, y un botón “Usar $800”.",
+        pasos: async (pagina) => {
+          await entrarAlDemo(pagina);
+          await pagina.goto(URL_APP + "/avisos");
+          await pagina.getByRole("button", { name: /Ver precio sugerido/ }).first().click();
+          await pagina.waitForURL("**/mi-stock/productos/**");
+        },
+      },
+      {
+        archivo: "04-gana-poco-sugerencia",
+        ruta: "/",
+        titulo: "Producto con el que ganas poco",
+        descripcion: "La ficha explica el precio sugerido en una frase y ofrece usarlo con un toque.",
+        pasos: async (pagina) => {
+          await entrarAlDemo(pagina);
+          await irAProducto(pagina, "Aceite");
+        },
+      },
+      {
+        archivo: "05-precio-cambiado",
+        ruta: "/",
+        titulo: "Listo: precio cambiado",
+        descripcion: "Al tocar “Usar”, el precio de venta cambia al sugerido y se confirma con un mensaje.",
+        pasos: async (pagina) => {
+          await entrarComo(pagina, ROSA.rut, ROSA.clave);
+          await pagina.waitForURL("**/inicio");
+          await irAProducto(pagina, "Aceite");
+          await pagina.getByRole("button", { name: /^Usar \$/ }).first().click();
+          await pagina.waitForURL("**listo=precio**");
+        },
+      },
+      {
+        archivo: "06-sin-avisos",
+        ruta: "/",
+        titulo: "Sin avisos nuevos",
+        descripcion: "Con “Ya los vi todos” quedan como vistos (abajo). Si no hay nada nuevo, la pantalla lo dice tranquila.",
+        pasos: async (pagina) => {
+          await entrarComo(pagina, ROSA.rut, ROSA.clave);
+          await pagina.waitForURL("**/inicio");
+          await pagina.goto(URL_APP + "/avisos");
+          await pagina.getByRole("button", { name: /Ya los vi todos/ }).click();
+          await pagina.waitForURL("**listo=leidos**");
+        },
+      },
+      {
+        archivo: "07-mas",
+        ruta: "/",
+        titulo: "Más: ajustes del dueño",
+        descripcion: "El dueño tiene dos opciones nuevas: “Cuánto quiero ganar” (margen por categoría) y “Aviso de cambio de costo”.",
+        pasos: async (pagina) => {
+          await entrarAlDemo(pagina);
+          await pagina.goto(URL_APP + "/mas");
+        },
+      },
+      {
+        archivo: "08-margenes",
+        ruta: "/",
+        titulo: "Cuánto quiero ganar",
+        descripcion: "El margen objetivo de cada categoría. Con esto se calculan los precios sugeridos.",
+        pasos: async (pagina) => {
+          await entrarAlDemo(pagina);
+          await pagina.goto(URL_APP + "/mas/margenes");
+        },
+      },
+      {
+        archivo: "09-cambiar-margen",
+        ruta: "/",
+        titulo: "Cambiar el margen de una categoría",
+        descripcion: "Un solo dato por pantalla, con un ejemplo de qué significa.",
+        pasos: async (pagina) => {
+          await entrarAlDemo(pagina);
+          await pagina.goto(URL_APP + "/mas/margenes");
+          await pagina.getByRole("link", { name: /Abarrotes/ }).click();
+          await pagina.waitForURL("**/mas/margenes/**");
+        },
+      },
+      {
+        archivo: "10-aviso-de-costo-ajuste",
+        ruta: "/",
+        titulo: "Cuándo avisar un cambio de costo",
+        descripcion: "Por defecto 5%: si algo que costaba $1.000 pasa de $1.050, te avisamos.",
+        pasos: async (pagina) => {
+          await entrarAlDemo(pagina);
+          await pagina.goto(URL_APP + "/mas/aviso-costo");
+        },
+      },
+    ],
+  },
 };
 
 // ---------------------------------------------------------------------------
@@ -918,6 +1051,18 @@ async function revisarBoletaRosa(pagina, { pausar = false } = {}) {
     }
   }
   await pagina.getByRole("heading", { name: /Esto se va a sumar/ }).waitFor();
+}
+
+
+/** Rosa con un producto que gana poco y una compra con alza de costo (para tener avisos propios). */
+async function prepararFase4() {
+  const admin = clienteAdminLocal();
+  await negocioDePrueba(admin, ROSA, [...PRODUCTOS_ROSA, ["Abarrotes", "Aceite vegetal 1 L", "unidad", 2690, 2350, 8, 4]]);
+  const { data: rosa } = await admin.from("usuarios").select("empresa_id").eq("rut", ROSA.rutNormalizado).single();
+  const { data: aceite } = await admin.from("productos").select("id").eq("empresa_id", rosa.empresa_id).eq("nombre", "Aceite vegetal 1 L").single();
+  await admin
+    .from("movimientos_stock")
+    .insert({ empresa_id: rosa.empresa_id, producto_id: aceite.id, tipo: "compra", cantidad: 6, costo_unitario: 2550 });
 }
 
 const escaparHtml = (texto) =>

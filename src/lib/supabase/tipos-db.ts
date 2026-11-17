@@ -24,7 +24,33 @@ export type Database = {
           }
         },"public": {
           Tables: {
-            "alias_productos": {
+            "alertas": {
+                  Row: {
+                    "created_at": string,"datos": NonNullable<Json>,"empresa_id": string,"enviada_correo": boolean,"enviada_push": boolean,"id": string,"leida": boolean,"mensaje": string,"producto_id": string | null,"tipo": string,"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"datos"?: NonNullable<Json>,"empresa_id": string,"enviada_correo"?: boolean,"enviada_push"?: boolean,"id"?: string,"leida"?: boolean,"mensaje": string,"producto_id"?: string | null,"tipo": string,"updated_at"?: string
+                  }
+                  Update: {
+                    "created_at"?: string,"datos"?: NonNullable<Json>,"empresa_id"?: string,"enviada_correo"?: boolean,"enviada_push"?: boolean,"id"?: string,"leida"?: boolean,"mensaje"?: string,"producto_id"?: string | null,"tipo"?: string,"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "alertas_empresa_id_fkey"
+      columns: ["empresa_id"]
+isOneToOne: false
+      referencedRelation: "empresas"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "alertas_producto_id_fkey"
+      columns: ["producto_id"]
+isOneToOne: false
+      referencedRelation: "productos"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"alias_productos": {
                   Row: {
                     "created_at": string,"descripcion_original": string,"empresa_id": string,"id": string,"producto_id": string,"proveedor_id": string | null,"updated_at": string
                   }
@@ -136,14 +162,14 @@ isOneToOne: false
                   ]
                 },"empresas": {
                   Row: {
-                    "comuna": string,"creada_en": string,"created_at": string,"dia_pago": number,"es_demo": boolean,"estado_suscripcion": string,"id": string,"nombre_fantasia": string,"plan": string,"razon_social": string | null,"rut": string,"updated_at": string
+                    "comuna": string,"creada_en": string,"created_at": string,"dia_pago": number,"es_demo": boolean,"estado_suscripcion": string,"id": string,"nombre_fantasia": string,"plan": string,"razon_social": string | null,"rut": string,"umbral_aviso_costo": number,"updated_at": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "comuna"?: string,"creada_en"?: string,"created_at"?: string,"dia_pago"?: number,"es_demo"?: boolean,"estado_suscripcion"?: string,"id"?: string,"nombre_fantasia": string,"plan"?: string,"razon_social"?: string | null,"rut": string,"updated_at"?: string
+                    "comuna"?: string,"creada_en"?: string,"created_at"?: string,"dia_pago"?: number,"es_demo"?: boolean,"estado_suscripcion"?: string,"id"?: string,"nombre_fantasia": string,"plan"?: string,"razon_social"?: string | null,"rut": string,"umbral_aviso_costo"?: number,"updated_at"?: string
                   }
                   Update: {
-                    "comuna"?: string,"creada_en"?: string,"created_at"?: string,"dia_pago"?: number,"es_demo"?: boolean,"estado_suscripcion"?: string,"id"?: string,"nombre_fantasia"?: string,"plan"?: string,"razon_social"?: string | null,"rut"?: string,"updated_at"?: string
+                    "comuna"?: string,"creada_en"?: string,"created_at"?: string,"dia_pago"?: number,"es_demo"?: boolean,"estado_suscripcion"?: string,"id"?: string,"nombre_fantasia"?: string,"plan"?: string,"razon_social"?: string | null,"rut"?: string,"umbral_aviso_costo"?: number,"updated_at"?: string
                   }
                   Relationships: [
                     
@@ -341,6 +367,15 @@ isOneToOne: false
                            },
 "normalizar_descripcion":
 { Args: { "p_texto": string }; Returns: string
+                           },
+"pesos":
+{ Args: { "p_valor": number }; Returns: string
+                           },
+"porcentaje":
+{ Args: { "p_valor": number }; Returns: string
+                           },
+"precio_sugerido":
+{ Args: { "p_costo": number,"p_margen": number }; Returns: number
                            },
 "puedo_modificar":
 { Args: { "p_empresa_id": string }; Returns: boolean

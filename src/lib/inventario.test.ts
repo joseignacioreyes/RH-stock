@@ -5,6 +5,8 @@ import {
   diferenciaConteo,
   margen,
   margenBajoObjetivo,
+  precioParaMargen,
+  recomendarPrecio,
   seEstaAcabando,
   sinMovimientoReciente,
 } from "./inventario";
@@ -77,6 +79,22 @@ describe("avisos de stock", () => {
     expect(sinMovimientoReciente("2026-10-10T12:00:00Z", ahora)).toBe(true);
     expect(sinMovimientoReciente("2026-11-01T12:00:00Z", ahora)).toBe(false);
     expect(sinMovimientoReciente(null, ahora)).toBe(false);
+  });
+
+  it("calcula el precio para el margen objetivo (ejemplo de CLAUDE.md)", () => {
+    expect(precioParaMargen(1350, 25)).toBe(1800);
+    expect(precioParaMargen(2350, 18)).toBe(2870);
+  });
+
+  it("sugiere un precio y lo explica en una frase cuando el margen queda bajo el objetivo", () => {
+    const pesos = (n: number) => `$${new Intl.NumberFormat("es-CL").format(n)}`;
+    const pct = (n: number) => `${n}%`;
+    expect(recomendarPrecio(1350, 1590, 25, pesos, pct)).toEqual({
+      precioSugerido: 1800,
+      frase: "Tu costo es $1.350. Con tu margen objetivo de 25%, el precio sugerido es $1.800 (hoy lo vendes a $1.590).",
+    });
+    expect(recomendarPrecio(1000, 1490, 25, pesos, pct)).toBeNull();
+    expect(recomendarPrecio(0, 1490, 25, pesos, pct)).toBeNull();
   });
 
   it("el conteo registra solo la diferencia", () => {

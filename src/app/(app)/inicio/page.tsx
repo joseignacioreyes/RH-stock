@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Aviso } from "@/components/ui/Aviso";
+import { contarAvisosSinLeer } from "@/lib/avisos";
 import { exigirSesionDeNegocio, primerNombre } from "@/lib/sesion";
 
 export const metadata: Metadata = { title: "Inicio" };
@@ -16,6 +17,7 @@ const TAREAS = [
 export default async function PaginaInicio({ searchParams }: PageProps<"/inicio">) {
   const { usuario, empresa } = await exigirSesionDeNegocio();
   const { bienvenida, clave } = await searchParams;
+  const avisosSinLeer = await contarAvisosSinLeer();
 
   return (
     <main className="mx-auto w-full max-w-xl px-4 pt-5 pb-28">
@@ -38,8 +40,14 @@ export default async function PaginaInicio({ searchParams }: PageProps<"/inicio"
           <Link
             key={tarea.href}
             href={tarea.href}
-            className="flex min-h-40 flex-col items-center justify-center gap-2 rounded-3xl bg-fondo p-4 text-center shadow-sm ring-1 ring-black/5 transition-colors hover:bg-marca-claro active:bg-marca-claro"
+            className="relative flex min-h-40 flex-col items-center justify-center gap-2 rounded-3xl bg-fondo p-4 text-center shadow-sm ring-1 ring-black/5 transition-colors hover:bg-marca-claro active:bg-marca-claro"
           >
+            {tarea.href === "/avisos" && avisosSinLeer > 0 && (
+              <span className="absolute top-3 right-3 flex min-w-9 items-center justify-center rounded-full bg-falta px-2 py-0.5 text-lg font-bold text-white">
+                {avisosSinLeer}
+                <span className="sr-only"> avisos nuevos</span>
+              </span>
+            )}
             <span aria-hidden="true" className="text-5xl leading-none">
               {tarea.icono}
             </span>

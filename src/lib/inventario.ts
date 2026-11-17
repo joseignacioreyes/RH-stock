@@ -65,3 +65,31 @@ function redondear(valor: number, decimales = 2): number {
   const factor = 10 ** decimales;
   return Math.round(valor * factor) / factor;
 }
+
+/** Precio de venta para lograr el margen objetivo, redondeado a $10: costo / (1 − margen). */
+export function precioParaMargen(costo: number, margenObjetivo: number): number {
+  if (costo <= 0 || margenObjetivo >= 100) return 0;
+  return Math.ceil(costo / (1 - margenObjetivo / 100) / 10) * 10;
+}
+
+export type Recomendacion = { precioSugerido: number; frase: string };
+
+/**
+ * Si el precio actual deja menos margen que el objetivo, sugiere un precio y lo explica en una frase.
+ * Ej.: "Tu costo es $1.350. Con tu margen objetivo de 25%, el precio sugerido es $1.800 (hoy lo vendes a $1.590)."
+ */
+export function recomendarPrecio(
+  costo: number,
+  precioActual: number,
+  margenObjetivo: number,
+  formatear: (n: number) => string,
+  formatearPct: (n: number) => string,
+): Recomendacion | null {
+  if (!margenBajoObjetivo(precioActual, costo, margenObjetivo)) return null;
+  const precioSugerido = precioParaMargen(costo, margenObjetivo);
+  if (precioSugerido <= precioActual) return null;
+  return {
+    precioSugerido,
+    frase: `Tu costo es ${formatear(costo)}. Con tu margen objetivo de ${formatearPct(margenObjetivo)}, el precio sugerido es ${formatear(precioSugerido)} (hoy lo vendes a ${formatear(precioActual)}).`,
+  };
+}

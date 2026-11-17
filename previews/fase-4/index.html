@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="es-CL">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Revisión Fase 4: Avisos y precios | RH Stock</title>
+<style>
+  :root { --marca:#0F766E; --texto:#1F2937; --suave:#4B5563; --fondo:#F3F4F6; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--fondo); color:var(--texto); font:18px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  header { background:var(--marca); color:#fff; padding:24px 16px; }
+  header h1 { margin:0; font-size:28px; }
+  header p { margin:8px 0 0; max-width:720px; }
+  main { max-width:1100px; margin:0 auto; padding:16px; display:grid; gap:24px; }
+  .tarjeta { background:#fff; border-radius:16px; padding:20px; box-shadow:0 1px 3px rgb(0 0 0 / .08); }
+  .tarjeta h2 { margin:0 0 8px; font-size:22px; display:flex; align-items:center; gap:12px; }
+  .numero { display:inline-flex; align-items:center; justify-content:center; width:36px; height:36px; border-radius:50%; background:var(--marca); color:#fff; font-size:18px; flex-shrink:0; }
+  .tarjeta p { margin:0 0 16px; color:var(--suave); }
+  .imagenes { display:flex; flex-wrap:wrap; gap:20px; align-items:flex-start; }
+  figure { margin:0; }
+  figcaption { text-align:center; color:var(--suave); font-size:16px; margin-top:6px; }
+  img { display:block; max-width:100%; height:auto; border:1px solid #E5E7EB; border-radius:12px; }
+  .celular img { width:300px; }
+  video { display:block; max-width:100%; border-radius:12px; border:1px solid #E5E7EB; }
+  .escritorio { flex:1 1 480px; }
+  footer { text-align:center; color:var(--suave); font-size:16px; padding:24px 16px 40px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>RH Stock · Fase 4: Avisos y precios</h1>
+  <p>Los avisos se crean solos: cuando algo se está acabando y cuando una compra cambia el costo más del porcentaje que elegiste. Cada aviso de costo trae el precio sugerido explicado en una frase, con un botón para usarlo. El margen de cada categoría y el porcentaje del aviso se cambian en “Más”. (El envío por correo y al celular se suma cuando estén las cuentas de correo y Vercel.)</p>
+</header>
+<main>
+<article class="tarjeta"><h2><span class="numero">▶</span> Video del recorrido</h2><p>El recorrido principal de la fase, como lo haría un almacenero.</p><video src="recorrido.webm" controls muted playsinline width="300"></video></article>
+
+      <article class="tarjeta">
+        <h2><span class="numero">1</span> Inicio con avisos</h2>
+        <p>El botón “Avisos” muestra en rojo cuántos avisos nuevos hay.</p>
+        <div class="imagenes">
+          <figure class="celular"><img src="01-inicio-con-avisos.png" alt="Inicio con avisos en celular" loading="lazy"><figcaption>Celular</figcaption></figure>
+          
+        </div>
+      </article>
+
+      <article class="tarjeta">
+        <h2><span class="numero">2</span> Avisos</h2>
+        <p>Tarjetas simples: en rojo lo que se está acabando (con lo que queda hoy) y en amarillo el alza de costo de las galletas con el precio sugerido. Cada una tiene un botón para ir al producto.</p>
+        <div class="imagenes">
+          <figure class="celular"><img src="02-avisos.png" alt="Avisos en celular" loading="lazy"><figcaption>Celular</figcaption></figure>
+          
+        </div>
+      </article>
+
+      <article class="tarjeta">
+        <h2><span class="numero">3</span> Del aviso al precio sugerido</h2>
+        <p>Al tocar el aviso de costo se abre el producto con el aviso arriba: “Tu costo subió de $480 a $520 (+8,3%). Con tu margen objetivo de 35%, el precio sugerido es $800”, y un botón “Usar $800”.</p>
+        <div class="imagenes">
+          <figure class="celular"><img src="03-aviso-de-costo.png" alt="Del aviso al precio sugerido en celular" loading="lazy"><figcaption>Celular</figcaption></figure>
+          
+        </div>
+      </article>
+
+      <article class="tarjeta">
+        <h2><span class="numero">4</span> Producto con el que ganas poco</h2>
+        <p>La ficha explica el precio sugerido en una frase y ofrece usarlo con un toque.</p>
+        <div class="imagenes">
+          <figure class="celular"><img src="04-gana-poco-sugerencia.png" alt="Producto con el que ganas poco en celular" loading="lazy"><figcaption>Celular</figcaption></figure>
+          
+        </div>
+      </article>
+
+      <article class="tarjeta">
+        <h2><span class="numero">5</span> Listo: precio cambiado</h2>
+        <p>Al tocar “Usar”, el precio de venta cambia al sugerido y se confirma con un mensaje.</p>
+        <div class="imagenes">
+          <figure class="celular"><img src="05-precio-cambiado.png" alt="Listo: precio cambiado en celular" loading="lazy"><figcaption>Celular</figcaption></figure>
+          
+        </div>
+      </article>
+
+      <article class="tarjeta">
+        <h2><span class="numero">6</span> Sin avisos nuevos</h2>
+        <p>Con “Ya los vi todos” quedan como vistos (abajo). Si no hay nada nuevo, la pantalla lo dice tranquila.</p>
+        <div class="imagenes">
+          <figure class="celular"><img src="06-sin-avisos.png" alt="Sin avisos nuevos en celular" loading="lazy"><figcaption>Celular</figcaption></figure>
+          
+        </div>
+      </article>
+
+      <article class="tarjeta">
+        <h2><span class="numero">7</span> Más: ajustes del dueño</h2>
+        <p>El dueño tiene dos opciones nuevas: “Cuánto quiero ganar” (margen por categoría) y “Aviso de cambio de costo”.</p>
+        <div class="imagenes">
+          <figure class="celular"><img src="07-mas.png" alt="Más: ajustes del dueño en celular" loading="lazy"><figcaption>Celular</figcaption></figure>
+          
+        </div>
+      </article>
+
+      <article class="tarjeta">
+        <h2><span class="numero">8</span> Cuánto quiero ganar</h2>
+        <p>El margen objetivo de cada categoría. Con esto se calculan los precios sugeridos.</p>
+        <div class="imagenes">
+          <figure class="celular"><img src="08-margenes.png" alt="Cuánto quiero ganar en celular" loading="lazy"><figcaption>Celular</figcaption></figure>
+          
+        </div>
+      </article>
+
+      <article class="tarjeta">
+        <h2><span class="numero">9</span> Cambiar el margen de una categoría</h2>
+        <p>Un solo dato por pantalla, con un ejemplo de qué significa.</p>
+        <div class="imagenes">
+          <figure class="celular"><img src="09-cambiar-margen.png" alt="Cambiar el margen de una categoría en celular" loading="lazy"><figcaption>Celular</figcaption></figure>
+          
+        </div>
+      </article>
+
+      <article class="tarjeta">
+        <h2><span class="numero">10</span> Cuándo avisar un cambio de costo</h2>
+        <p>Por defecto 5%: si algo que costaba $1.000 pasa de $1.050, te avisamos.</p>
+        <div class="imagenes">
+          <figure class="celular"><img src="10-aviso-de-costo-ajuste.png" alt="Cuándo avisar un cambio de costo en celular" loading="lazy"><figcaption>Celular</figcaption></figure>
+          
+        </div>
+      </article>
+</main>
+<footer>Capturas tomadas automáticamente el 17-11-2026.</footer>
+</body>
+</html>

@@ -148,3 +148,15 @@ export async function guardarConteo(conteos: { productoId: string; cantidadReal:
   revalidatePath("/mi-stock", "layout");
   redirect(`/mi-stock?listo=conteo&cambios=${cambios ?? 0}`);
 }
+
+/** "Usar este precio": cambia el precio de venta al sugerido. */
+export async function usarPrecioSugerido(productoId: string, precio: number): Promise<void> {
+  const { empresa, usuario } = await exigirSesionDeNegocio();
+  if (empresa.esDemo || usuario.rol !== "dueno") redirect(`/mi-stock/productos/${productoId}?error=demo`);
+  if (!Number.isInteger(precio) || precio <= 0) redirect(`/mi-stock/productos/${productoId}?error=general`);
+  const supabase = await crearClienteServidor();
+  const { error } = await supabase.from("productos").update({ precio_venta: precio }).eq("id", productoId);
+  if (error) redirect(`/mi-stock/productos/${productoId}?error=general`);
+  revalidatePath("/", "layout");
+  redirect(`/mi-stock/productos/${productoId}?listo=precio`);
+}

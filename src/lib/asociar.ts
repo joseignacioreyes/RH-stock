@@ -103,8 +103,5 @@ export function nombreDesdeDescripcion(descripcion: string): string {
   return limpio.charAt(0).toUpperCase() + limpio.slice(1);
 }
 
-/** Precio de venta sugerido para lograr el margen objetivo, redondeado a $10: costo / (1 − margen). */
-export function precioSugerido(costo: number, margenObjetivo: number): number {
-  if (costo <= 0 || margenObjetivo >= 100) return 0;
-  return Math.ceil(costo / (1 - margenObjetivo / 100) / 10) * 10;
-}
+/** Precio de venta sugerido para lograr el margen objetivo (misma fórmula de inventario.ts). */
+export { precioParaMargen as precioSugerido } from "./inventario";
