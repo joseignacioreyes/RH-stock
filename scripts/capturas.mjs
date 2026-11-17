@@ -994,6 +994,130 @@ const PANTALLAS = {
       },
     ],
   },
+
+  6: {
+    titulo: "Fase 6: Exportar y “Mis datos”",
+    resumen:
+      "El dueño descarga a Excel sus productos, compras, ventas y movimientos. En “Mis datos” cualquiera descarga todos sus datos (Ley 21.719) y el dueño puede pedir eliminar la cuenta: se borra todo a los 30 días, con opción de arrepentirse.",
+    preparar: prepararFase2b,
+    recorrido: async (pagina) => {
+      await entrarComo(pagina, ROSA.rut, ROSA.clave);
+      await pagina.waitForURL("**/inicio");
+      await pagina.goto(URL_APP + "/mas");
+      await pausa(pagina, 1500);
+      await pagina.getByRole("link", { name: /Descargar a Excel/ }).click();
+      await pausa(pagina, 1500);
+      const descarga = pagina.waitForEvent("download");
+      await pagina.getByRole("link", { name: /Mis productos/ }).click();
+      await descarga;
+      await pausa(pagina, 1200);
+      await pagina.goto(URL_APP + "/mas/mis-datos");
+      await pausa(pagina, 1500);
+      await pagina.getByRole("link", { name: /Quiero eliminar mi cuenta/ }).click();
+      await pausa(pagina, 2000);
+      await pagina.getByRole("button", { name: /Sí, eliminar mi cuenta/ }).click();
+      await pagina.waitForURL("**listo=solicitada**");
+      await pausa(pagina, 2000);
+      await pagina.getByRole("button", { name: /No borrar mi cuenta/ }).click();
+      await pagina.waitForURL("**listo=cancelada**");
+      await pausa(pagina, 2000);
+    },
+    pantallas: [
+      {
+        archivo: "01-mas",
+        ruta: "/",
+        titulo: "Más",
+        descripcion: "Dos opciones nuevas: “Descargar a Excel” (solo el dueño, porque incluye costos) y “Mis datos”.",
+        pasos: async (pagina) => {
+          await entrarAlDemo(pagina);
+          await pagina.goto(URL_APP + "/mas");
+        },
+      },
+      {
+        archivo: "02-descargar-a-excel",
+        ruta: "/",
+        titulo: "Descargar a Excel",
+        descripcion: "Cuatro botones grandes. El archivo se abre con Excel o Google Sheets y sirve también para el contador.",
+        pasos: async (pagina) => {
+          await entrarAlDemo(pagina);
+          await pagina.goto(URL_APP + "/mas/exportar");
+        },
+      },
+      {
+        archivo: "03-archivo-de-productos",
+        ruta: "/",
+        titulo: "Así se ve el archivo de productos",
+        descripcion: "Una fila por producto, con stock, costo, precio, margen y valor del stock. Columnas en español, pesos sin decimales y fechas DD-MM-AAAA.",
+        pasos: async (pagina) => {
+          await entrarAlDemo(pagina);
+          await pagina.goto(URL_APP + "/mas/exportar");
+          const csv = await descargarTexto(pagina, /Mis productos/);
+          await mostrarComoPlanilla(pagina, csv, 14);
+        },
+      },
+      {
+        archivo: "04-archivo-de-ventas",
+        ruta: "/",
+        titulo: "Así se ve el archivo de ventas",
+        descripcion: "Cada producto vendido, con fecha, hora, vendedor y medio de pago.",
+        pasos: async (pagina) => {
+          await entrarAlDemo(pagina);
+          await pagina.goto(URL_APP + "/mas/exportar");
+          const csv = await descargarTexto(pagina, /Lo que vendí/);
+          await mostrarComoPlanilla(pagina, csv, 14);
+        },
+      },
+      {
+        archivo: "05-mis-datos",
+        ruta: "/",
+        titulo: "Mis datos",
+        descripcion:
+          "Descargar todos los datos en un archivo (derecho de acceso y portabilidad), cómo pedir correcciones, y al final “Quiero eliminar mi cuenta”. (En el demo no aparece eliminar.)",
+        pasos: async (pagina) => {
+          await entrarComo(pagina, ROSA.rut, ROSA.clave);
+          await pagina.waitForURL("**/inicio");
+          await pagina.goto(URL_APP + "/mas/mis-datos");
+        },
+      },
+      {
+        archivo: "06-eliminar-pregunta",
+        ruta: "/",
+        titulo: "Eliminar la cuenta (pregunta antes)",
+        descripcion: "Explica qué se borra, que hay 30 días para arrepentirse y que después no se puede deshacer.",
+        pasos: async (pagina) => {
+          await entrarComo(pagina, ROSA.rut, ROSA.clave);
+          await pagina.waitForURL("**/inicio");
+          await pagina.goto(URL_APP + "/mas/mis-datos/eliminar");
+        },
+      },
+      {
+        archivo: "07-eliminacion-pendiente",
+        ruta: "/",
+        titulo: "Eliminación programada",
+        descripcion: "Muestra la fecha en que se borrará todo y un botón para arrepentirse.",
+        pasos: async (pagina) => {
+          await entrarComo(pagina, ROSA.rut, ROSA.clave);
+          await pagina.waitForURL("**/inicio");
+          await pagina.goto(URL_APP + "/mas/mis-datos/eliminar");
+          await pagina.getByRole("button", { name: /Sí, eliminar mi cuenta/ }).click();
+          await pagina.waitForURL("**listo=solicitada**");
+        },
+      },
+      {
+        archivo: "08-cancelada",
+        ruta: "/",
+        titulo: "Me arrepentí",
+        descripcion: "Con “No borrar mi cuenta” todo sigue normal.",
+        pasos: async (pagina) => {
+          await entrarComo(pagina, ROSA.rut, ROSA.clave);
+          await pagina.waitForURL("**/inicio");
+          await pagina.goto(URL_APP + "/mas/mis-datos");
+          await pagina.getByRole("button", { name: /No borrar mi cuenta/ }).click();
+          await pagina.waitForURL("**listo=cancelada**");
+        },
+      },
+    ],
+  },
 };
 
 // ---------------------------------------------------------------------------
@@ -1265,6 +1389,37 @@ async function entrarDemoACaja(pagina) {
   await pagina.getByRole("button", { name: /Carla/ }).click();
   for (let i = 0; i < 4; i++) await pagina.getByRole("button", { name: "1", exact: true }).click();
   await pagina.getByRole("heading", { name: "Más vendidos" }).waitFor();
+}
+
+
+/** Toca un enlace de descarga y devuelve el texto del archivo (comprobando que sea un CSV con datos). */
+async function descargarTexto(pagina, nombreEnlace) {
+  const [descarga] = await Promise.all([pagina.waitForEvent("download"), pagina.getByRole("link", { name: nombreEnlace }).click()]);
+  const ruta = await descarga.path();
+  const { readFile } = await import("node:fs/promises");
+  const texto = (await readFile(ruta, "utf8")).replace(/^﻿/, "");
+  if (texto.trim().split("\r\n").length < 2) throw new Error(`El archivo ${descarga.suggestedFilename()} está vacío`);
+  console.log(`  (descarga ${descarga.suggestedFilename()}: ${texto.trim().split("\r\n").length - 1} filas)`);
+  return texto;
+}
+
+/** Muestra un CSV como planilla, para ver cómo queda en Excel. */
+async function mostrarComoPlanilla(pagina, csv, filasMaximas) {
+  const filas = csv
+    .trim()
+    .split("\r\n")
+    .slice(0, filasMaximas + 1)
+    .map((linea) => linea.split(";").map((c) => c.replace(/^"|"$/g, "").replaceAll('""', '"')));
+  const html = filas
+    .map((f, i) => `<tr>${f.map((c) => (i === 0 ? `<th>${escaparHtml(c)}</th>` : `<td>${escaparHtml(c)}</td>`)).join("")}</tr>`)
+    .join("");
+  await pagina.setViewportSize({ width: 1366, height: 768 });
+  await pagina.setContent(`<!doctype html><html><head><meta charset="utf-8"><style>
+    body{margin:0;font:14px Calibri,Arial,sans-serif;background:#fff}
+    table{border-collapse:collapse} th,td{border:1px solid #d4d4d4;padding:4px 8px;white-space:nowrap}
+    th{background:#e8f3f1;font-weight:700;text-align:left} tr:nth-child(even) td{background:#fafafa}
+    .barra{background:#107c41;color:#fff;padding:8px 12px;font-weight:700}
+  </style></head><body><div class="barra">Vista como planilla (Excel)</div><table>${html}</table></body></html>`);
 }
 
 const escaparHtml = (texto) =>

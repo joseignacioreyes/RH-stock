@@ -348,6 +348,32 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"solicitudes_eliminacion": {
+                  Row: {
+                    "created_at": string,"eliminar_desde": string,"empresa_id": string | null,"estado": string,"id": string,"nombre_negocio": string,"realizada_en": string | null,"rut_empresa": string,"solicitada_por": string | null,"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"eliminar_desde": string,"empresa_id"?: string | null,"estado"?: string,"id"?: string,"nombre_negocio": string,"realizada_en"?: string | null,"rut_empresa": string,"solicitada_por"?: string | null,"updated_at"?: string
+                  }
+                  Update: {
+                    "created_at"?: string,"eliminar_desde"?: string,"empresa_id"?: string | null,"estado"?: string,"id"?: string,"nombre_negocio"?: string,"realizada_en"?: string | null,"rut_empresa"?: string,"solicitada_por"?: string | null,"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "solicitudes_eliminacion_empresa_id_fkey"
+      columns: ["empresa_id"]
+isOneToOne: false
+      referencedRelation: "empresas"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "solicitudes_eliminacion_solicitada_por_fkey"
+      columns: ["solicitada_por"]
+isOneToOne: false
+      referencedRelation: "usuarios"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"usuarios": {
                   Row: {
                     "correo": string,"created_at": string,"empresa_id": string | null,"id": string,"nombre": string,"rol": string,"rut": string,"updated_at": string
@@ -429,6 +455,9 @@ isOneToOne: false
             "agregar_vendedor":
 { Args: { "p_nombre": string,"p_pin": string }; Returns: string
                            },
+"cancelar_eliminacion":
+{ Args: Record<PropertyKey, never>; Returns: undefined
+                           },
 "cerrar_caja":
 { Args: { "p_efectivo_contado": number,"p_fecha": string }; Returns: string
                            },
@@ -498,6 +527,9 @@ isOneToOne: false
                            },
 "registrar_venta":
 { Args: { "p_venta": Json }; Returns: string
+                           },
+"solicitar_eliminacion":
+{ Args: Record<PropertyKey, never>; Returns: string
                            },
 "verificar_pin":
 { Args: { "p_pin": string,"p_vendedor_id": string }; Returns: string

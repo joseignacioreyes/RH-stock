@@ -43,6 +43,14 @@ export default async function PaginaMas({ searchParams }: PageProps<"/mas">) {
             </BotonEnlace>
           </>
         )}
+        {esDueno && (
+          <BotonEnlace href="/mas/exportar" variante="suave" icono="📊">
+            Descargar a Excel
+          </BotonEnlace>
+        )}
+        <BotonEnlace href="/mas/mis-datos" variante="suave" icono="🗂️">
+          Mis datos
+        </BotonEnlace>
         <BotonEnlace href="/privacidad" variante="suave" icono="🔒">
           Política de privacidad
         </BotonEnlace>
