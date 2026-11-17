@@ -13,8 +13,9 @@ Este proyecto se construye con Claude Code siguiendo `CLAUDE.md`, por fases y co
 | Fase | Estado |
 |---|---|
 | 0. Preparación | ✅ Aprobada |
-| 1. Cuentas y seguridad | 🔍 En revisión ([capturas](previews/fase-1/index.html)) |
-| 2. Productos e inventario | Pendiente |
+| 1. Cuentas y seguridad | ✅ Aprobada (falta conectarla a Supabase de producción) |
+| 2. Productos e inventario | 🔍 En revisión ([capturas](previews/fase-2/index.html)) |
+| 2b. Modo caja | Pendiente |
 
 ## Cuentas necesarias
 
@@ -41,8 +42,8 @@ npm run dev                       # abre http://localhost:3000
 |---|---|
 | `npm run dev` | Abre la app en tu computador (http://localhost:3000) |
 | `npm run build` | Prepara la versión final (lo mismo que hace Vercel) |
-| `npm test` | Corre las pruebas automáticas (RUT, formularios, WhatsApp) |
-| `npm run test:db` | Prueba las reglas de seguridad entre negocios (necesita `npx supabase start`) |
+| `npm test` | Corre las pruebas automáticas (RUT, formularios, stock, costo promedio, margen, formatos) |
+| `npm run test:db` | Prueba la seguridad entre negocios y el inventario en la base de datos (necesita `npx supabase start`) |
 | `npm run seed:demo` | Crea o deja como nuevo el negocio de ejemplo Almacén Don Pepe |
 | `npm run cuenta:admin -- --rut … --nombre "…" --correo …` | Crea la cuenta de administrador y entrega un enlace para elegir la clave |
 | `npm run cuenta:enlace-clave -- --rut …` | Enlace para que alguien elija una clave nueva (enviarlo solo a su correo registrado) |
@@ -65,6 +66,8 @@ Están documentadas en [`.env.example`](.env.example). En tu computador van en `
 ## Base de datos
 
 - Las tablas y reglas de seguridad están en `supabase/migrations/`. Cada negocio ve solo sus datos (RLS) y las pruebas están en `pruebas/db/rls.test.ts`.
+- **Nadie edita el stock a mano.** El stock solo cambia con movimientos (`movimientos_stock`: compra, venta, ajuste, merma), que no se pueden cambiar ni borrar. `productos.stock_actual` y `costo_promedio` se actualizan solos con cada movimiento (costo promedio ponderado).
+- Los empleados no ven costos: el dueño los obtiene con la función `costos_de_mi_negocio()`.
 - Las personas entran con RUT y clave. Por dentro, Supabase Auth usa un correo interno armado con el RUT (`12345678-5@cuentas.rhstock.cl`); el correo real queda en la tabla `usuarios` y se usa solo para recuperar la clave.
 - En el Supabase de producción: **Authentication → Sign In / Providers → desactivar "Allow new users to sign up"** (las cuentas las crea solo la app).
 

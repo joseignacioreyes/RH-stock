@@ -15,7 +15,7 @@
     "seed:demo": "node --env-file-if-exists=.env.local scripts/seed-demo.mjs",
     "cuenta:admin": "node --env-file-if-exists=.env.local scripts/cuentas.mjs admin",
     "cuenta:enlace-clave": "node --env-file-if-exists=.env.local scripts/cuentas.mjs enlace-clave",
-    "db:tipos": "supabase gen types typescript --local > src/lib/supabase/tipos-db.ts && sed -i \"1i // Archivo GENERADO con \\\"npm run db:tipos\\\". No editar a mano.\" src/lib/supabase/tipos-db.ts"
+    "db:tipos": "supabase gen types typescript --local > tipos-db.tmp && (echo \"// Archivo GENERADO con npm run db:tipos. No editar a mano.\" && cat tipos-db.tmp) > src/lib/supabase/tipos-db.ts; rm -f tipos-db.tmp"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",

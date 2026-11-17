@@ -7,7 +7,7 @@ import { enlaceWhatsApp, MENSAJES_WHATSAPP } from "@/lib/whatsapp";
  */
 export function BotonAyudaWhatsApp({ mensaje = MENSAJES_WHATSAPP.ayuda }: { mensaje?: string }) {
   return (
-    <div className="fixed inset-x-0 bottom-0 z-20 border-t border-black/10 bg-fondo/95 pb-[env(safe-area-inset-bottom)] backdrop-blur">
+    <div data-fijo-abajo className="fixed inset-x-0 bottom-0 z-20 border-t border-black/10 bg-fondo/95 pb-[env(safe-area-inset-bottom)] backdrop-blur">
       <div className="mx-auto flex w-full max-w-xl justify-end px-4 py-2">
         <a
           href={enlaceWhatsApp(mensaje)}

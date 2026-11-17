@@ -213,8 +213,273 @@ const PANTALLAS = {
       },
     ],
   },
+  2: {
+    titulo: "Fase 2: Productos e inventario",
+    resumen:
+      "“Mi stock” ya funciona: tarjetas con lo que falta y lo que sobra, la lista de productos con buscador, la ficha de cada producto, descontar pérdidas con motivo y el conteo rápido. El stock nunca se edita a mano: todo queda como movimiento.",
+    preparar: prepararFase2,
+    recorrido: async (pagina) => {
+      await entrarComo(pagina, ROSA.rut, ROSA.clave);
+      await pagina.waitForURL("**/inicio");
+      await pausa(pagina);
+      await pagina.getByRole("link", { name: /Mi stock/ }).click();
+      await pagina.waitForURL("**/mi-stock");
+      await pausa(pagina, 1800);
+      await pagina.getByRole("link", { name: "Ver todos mis productos" }).click();
+      await pausa(pagina);
+      await pagina.getByRole("link", { name: /Pan marraqueta/ }).click();
+      await pausa(pagina, 1800);
+      await pagina.getByRole("link", { name: "Descontar pérdida o regalo" }).click();
+      await pausa(pagina);
+      await pagina.locator("label", { hasText: "Se echó a perder" }).click();
+      await pagina.getByLabel(/¿Cuánto\?/).pressSequentially("1,5", { delay: 120 });
+      await pausa(pagina);
+      await pagina.getByRole("button", { name: "Guardar" }).click();
+      await pagina.waitForURL("**listo=salida**");
+      await pausa(pagina, 2500);
+    },
+    pantallas: [
+      {
+        archivo: "01-mi-stock",
+        ruta: "/",
+        titulo: "Mi stock",
+        descripcion:
+          "Tarjetas simples en vez de tablas: lo que te falta (en rojo), lo que no se vende hace un mes, con qué productos ganas poco y cuánto vale tu mercadería. Cada tarjeta tiene “Ver cuáles”.",
+        pasos: async (pagina) => {
+          await entrarAlDemo(pagina);
+          await pagina.goto(URL_APP + "/mi-stock");
+        },
+      },
+      {
+        archivo: "02-se-estan-acabando",
+        ruta: "/",
+        titulo: "Se están acabando",
+        descripcion: "Al tocar “Ver cuáles” aparecen solo los productos bajo el mínimo, con lo que queda en rojo.",
+        pasos: async (pagina) => {
+          await entrarAlDemo(pagina);
+          await pagina.goto(URL_APP + "/mi-stock/productos?filtro=faltan");
+        },
+      },
+      {
+        archivo: "03-mis-productos",
+        ruta: "/",
+        titulo: "Mis productos",
+        descripcion: "Todos los productos ordenados por categoría, con lo que queda de cada uno. Arriba hay un buscador.",
+        pasos: async (pagina) => {
+          await entrarAlDemo(pagina);
+          await pagina.goto(URL_APP + "/mi-stock/productos");
+        },
+      },
+      {
+        archivo: "04-buscar",
+        ruta: "/",
+        titulo: "Buscar un producto",
+        descripcion: "Escribe una parte del nombre (no importan las tildes) o el código de barras.",
+        pasos: async (pagina) => {
+          await entrarAlDemo(pagina);
+          await pagina.goto(URL_APP + "/mi-stock/productos");
+          await pagina.getByLabel("Buscar producto").fill("pan");
+        },
+      },
+      {
+        archivo: "05-producto",
+        ruta: "/",
+        titulo: "Ficha de un producto",
+        descripcion: "Cuánto queda (grande), el precio, el costo, cuánto ganas y lo último que pasó: ventas, mermas y el stock con que partió.",
+        pasos: async (pagina) => {
+          await entrarAlDemo(pagina);
+          await irAProducto(pagina, "Pan marraqueta");
+        },
+      },
+      {
+        archivo: "06-producto-gana-poco",
+        ruta: "/",
+        titulo: "Producto con el que ganas poco",
+        descripcion: "Si el precio deja menos ganancia que el objetivo de su categoría, la ficha lo dice con palabras simples. (En la Fase 4 sumamos el precio sugerido.)",
+        pasos: async (pagina) => {
+          await entrarAlDemo(pagina);
+          await irAProducto(pagina, "Aceite");
+        },
+      },
+      {
+        archivo: "07-descontar",
+        ruta: "/",
+        titulo: "Descontar pérdida o regalo",
+        descripcion: "Cuatro botones grandes con el motivo (se echó a perder, se venció, lo usé yo, lo regalé) y cuánto. Para el pan se puede usar coma: 1,5.",
+        pasos: async (pagina) => {
+          await entrarComo(pagina, ROSA.rut, ROSA.clave);
+          await pagina.waitForURL("**/inicio");
+          await irAProducto(pagina, "Pan marraqueta");
+          await pagina.getByRole("link", { name: "Descontar pérdida o regalo" }).click();
+          await pagina.locator("label", { hasText: "Se echó a perder" }).click();
+          await pagina.getByLabel(/¿Cuánto\?/).fill("1,5");
+        },
+      },
+      {
+        archivo: "08-descontado",
+        ruta: "/",
+        titulo: "Listo: se descontó",
+        descripcion: "Confirmación visible y el stock ya actualizado. La pérdida queda anotada en “Lo que pasó”.",
+        pasos: async (pagina) => {
+          await entrarComo(pagina, ROSA.rut, ROSA.clave);
+          await pagina.waitForURL("**/inicio");
+          await irAProducto(pagina, "Pan marraqueta");
+          await pagina.getByRole("link", { name: "Descontar pérdida o regalo" }).click();
+          await pagina.locator("label", { hasText: "Se echó a perder" }).click();
+          await pagina.getByLabel(/¿Cuánto\?/).fill("1,5");
+          await pagina.getByRole("button", { name: "Guardar" }).click();
+          await pagina.waitForURL("**listo=salida**");
+        },
+      },
+      {
+        archivo: "09-demo-no-guarda",
+        ruta: "/",
+        titulo: "En el demo no se guarda nada",
+        descripcion: "Si alguien prueba en el Almacén Don Pepe, puede recorrer todo, pero al guardar ve este aviso. Así el demo nunca se desordena.",
+        pasos: async (pagina) => {
+          await entrarAlDemo(pagina);
+          await irAProducto(pagina, "Pan marraqueta");
+          await pagina.getByRole("link", { name: "Descontar pérdida o regalo" }).click();
+          await pagina.locator("label", { hasText: "Se echó a perder" }).click();
+          await pagina.getByLabel(/¿Cuánto\?/).fill("1");
+          await pagina.getByRole("button", { name: "Guardar" }).click();
+          await pagina.getByRole("alert").waitFor();
+        },
+      },
+      {
+        archivo: "10-agregar-paso-1",
+        ruta: "/",
+        titulo: "Agregar producto: paso 1 de 3",
+        descripcion: "Nombre, categoría y cómo se vende (por unidad, kilo, litro o caja). Normalmente los productos se sumarán solos con la foto de la boleta (Fase 3).",
+        pasos: async (pagina) => {
+          await entrarComo(pagina, ROSA.rut, ROSA.clave);
+          await pagina.waitForURL("**/inicio");
+          await pagina.goto(URL_APP + "/mi-stock/productos/nuevo");
+          await pagina.getByLabel("Nombre").fill("Galletas de vainilla 120 g");
+          await pagina.getByLabel("Categoría").selectOption({ label: "🍫 Snacks y dulces" });
+        },
+      },
+      {
+        archivo: "11-agregar-paso-2",
+        ruta: "/",
+        titulo: "Agregar producto: paso 2 de 3",
+        descripcion: "A cuánto lo vendes, cuánto te costó y el código de barras (si tiene).",
+        pasos: async (pagina) => {
+          await entrarComo(pagina, ROSA.rut, ROSA.clave);
+          await pagina.waitForURL("**/inicio");
+          await pagina.goto(URL_APP + "/mi-stock/productos/nuevo");
+          await llenarProductoPaso1(pagina);
+          await pagina.getByLabel(/¿A cuánto lo vendes\?/).fill("790");
+          await pagina.getByLabel(/¿Cuánto te costó\?/).fill("480");
+        },
+      },
+      {
+        archivo: "12-agregar-paso-3",
+        ruta: "/",
+        titulo: "Agregar producto: paso 3 de 3",
+        descripcion: "Cuántos tienes ahora (queda como primer movimiento) y cuándo quieres que te avisemos que se está acabando.",
+        pasos: async (pagina) => {
+          await entrarComo(pagina, ROSA.rut, ROSA.clave);
+          await pagina.waitForURL("**/inicio");
+          await pagina.goto(URL_APP + "/mi-stock/productos/nuevo");
+          await llenarProductoPaso1(pagina);
+          await llenarProductoPaso2(pagina);
+          await pagina.getByLabel(/¿Cuánto tienes ahora\?/).fill("24");
+          await pagina.getByLabel("Avísame cuando queden").fill("6");
+        },
+      },
+      {
+        archivo: "13-producto-agregado",
+        ruta: "/",
+        titulo: "Listo: producto agregado",
+        descripcion: "El producto queda con su stock inicial, su precio y cuánto ganas.",
+        pasos: async (pagina) => {
+          await entrarComo(pagina, ROSA.rut, ROSA.clave);
+          await pagina.waitForURL("**/inicio");
+          await pagina.goto(URL_APP + "/mi-stock/productos/nuevo");
+          await llenarProductoPaso1(pagina);
+          await llenarProductoPaso2(pagina);
+          await pagina.getByLabel(/¿Cuánto tienes ahora\?/).fill("24");
+          await pagina.getByLabel("Avísame cuando queden").fill("6");
+          await pagina.getByRole("button", { name: "Guardar" }).click();
+          await pagina.waitForURL("**listo=nuevo**");
+        },
+      },
+      {
+        archivo: "14-contar-categorias",
+        ruta: "/",
+        titulo: "Contar lo que tengo",
+        descripcion: "Para lo que no pasa por la caja (pan, verduras, mermas): eliges una categoría y cuentas.",
+        pasos: async (pagina) => {
+          await entrarAlDemo(pagina);
+          await pagina.goto(URL_APP + "/mi-stock/conteo");
+        },
+      },
+      {
+        archivo: "15-contar-producto",
+        ruta: "/",
+        titulo: "Contar: un producto por pantalla",
+        descripcion: "Escribes cuántos hay de verdad. Si hay lo mismo que dice la app, basta con tocar “Hay lo mismo”.",
+        pasos: async (pagina) => {
+          await entrarComo(pagina, ROSA.rut, ROSA.clave);
+          await pagina.waitForURL("**/inicio");
+          await pagina.goto(URL_APP + "/mi-stock/conteo");
+          await pagina.getByRole("link", { name: /Panadería/ }).click();
+          await pagina.getByLabel(/¿Cuántos hay\?/).fill("10");
+        },
+      },
+      {
+        archivo: "16-contar-resumen",
+        ruta: "/",
+        titulo: "Contar: resumen antes de guardar",
+        descripcion: "La app muestra solo lo que no cuadra, para que lo revises antes de guardar. Nunca se cambia el stock sin dejarlo anotado.",
+        pasos: async (pagina) => {
+          await entrarComo(pagina, ROSA.rut, ROSA.clave);
+          await pagina.waitForURL("**/inicio");
+          await contarPanaderia(pagina);
+        },
+      },
+      {
+        archivo: "17-contado",
+        ruta: "/",
+        titulo: "Listo: conteo guardado",
+        descripcion: "Vuelve a “Mi stock” con la confirmación de cuántos productos se corrigieron.",
+        pasos: async (pagina) => {
+          await entrarComo(pagina, ROSA.rut, ROSA.clave);
+          await pagina.waitForURL("**/inicio");
+          await contarPanaderia(pagina);
+          await pagina.getByRole("button", { name: "Guardar conteo" }).click();
+          await pagina.waitForURL("**listo=conteo**");
+        },
+      },
+      {
+        archivo: "18-quitar-producto",
+        ruta: "/",
+        titulo: "Quitar un producto (pregunta antes)",
+        descripcion: "Nada se borra sin preguntar. El historial del producto queda guardado.",
+        pasos: async (pagina) => {
+          await entrarComo(pagina, ROSA.rut, ROSA.clave);
+          await pagina.waitForURL("**/inicio");
+          await irAProducto(pagina, "Bebida cola");
+          await pagina.getByRole("link", { name: "Cambiar datos" }).click();
+          await pagina.getByRole("link", { name: /Quitar este producto/ }).click();
+          await pagina.waitForURL("**/quitar");
+        },
+      },
+      {
+        archivo: "19-mi-stock-vacio",
+        ruta: "/",
+        titulo: "Mi stock sin productos",
+        descripcion: "Un negocio recién creado ve esta pantalla vacía con un solo camino: agregar su primer producto (o subir su primera boleta, en la Fase 3).",
+        pasos: async (pagina) => {
+          await entrarComo(pagina, NUEVO.rut, NUEVO.clave);
+          await pagina.waitForURL("**/inicio");
+          await pagina.goto(URL_APP + "/mi-stock");
+        },
+      },
+    ],
+  },
 };
-
 
 // ---------------------------------------------------------------------------
 // Ayudas para las pantallas que necesitan sesión o formularios llenos
@@ -304,6 +569,107 @@ async function prepararFase1() {
   if (errorFicha) throw errorFicha;
 }
 
+
+/** Negocios de prueba que SÍ se pueden modificar (el demo es solo para mirar). Solo en Supabase local. */
+const ROSA = { rut: "15.555.555-6", rutNormalizado: "15555555-6", nombre: "Rosa Prueba", negocio: "Almacén Rosita", rutNegocio: "77777777-7", clave: "Prueba1234" };
+const NUEVO = { rut: "16.666.666-K", rutNormalizado: "16666666-K", nombre: "Nelson Prueba", negocio: "Almacén Recién Abierto", rutNegocio: "78888888-0", clave: "Prueba1234" };
+
+const PRODUCTOS_ROSA = [
+  ["Panadería", "Pan marraqueta (kg)", "kg", 1990, 1300, 12, 6],
+  ["Panadería", "Pan hallulla (kg)", "kg", 1990, 1300, 8, 4],
+  ["Bebidas y jugos", "Bebida cola 1,5 L", "unidad", 1990, 1450, 15, 6],
+  ["Abarrotes", "Arroz grado 1 1 kg", "unidad", 1490, 1150, 3, 6],
+  ["Lácteos y huevos", "Leche entera 1 L", "unidad", 1150, 880, 18, 8],
+];
+
+function clienteAdminLocal() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
+  if (!/127\.0\.0\.1|localhost/.test(url)) throw new Error("Las capturas se toman solo con Supabase local (npx supabase start).");
+  return createClient(url, process.env.SUPABASE_SERVICE_ROLE_KEY, { auth: { persistSession: false } });
+}
+
+/** Crea desde cero un negocio de prueba (borrando el anterior si existe). */
+async function negocioDePrueba(admin, persona, productos = []) {
+  const { data: anterior } = await admin.from("usuarios").select("id, empresa_id").eq("rut", persona.rutNormalizado).maybeSingle();
+  if (anterior) {
+    await admin.auth.admin.deleteUser(anterior.id);
+    if (anterior.empresa_id) await admin.from("empresas").delete().eq("id", anterior.empresa_id);
+  }
+  await admin.from("empresas").delete().eq("rut", persona.rutNegocio);
+
+  const { data, error } = await admin.auth.admin.createUser({
+    email: `${persona.rutNormalizado.toLowerCase()}@cuentas.rhstock.cl`,
+    password: persona.clave,
+    email_confirm: true,
+  });
+  if (error) throw error;
+  const { data: empresaId, error: errorNegocio } = await admin.rpc("registrar_negocio", {
+    p_usuario_id: data.user.id,
+    p_rut_usuario: persona.rutNormalizado,
+    p_nombre: persona.nombre,
+    p_correo: "prueba@ejemplo.cl",
+    p_rut_empresa: persona.rutNegocio,
+    p_nombre_negocio: persona.negocio,
+    p_comuna: "Puente Alto",
+    p_version_legal: "2026-11-borrador",
+    p_ip: "",
+  });
+  if (errorNegocio) throw errorNegocio;
+
+  const { data: categorias } = await admin.from("categorias").select("id, nombre").eq("empresa_id", empresaId);
+  for (const [categoria, nombre, unidad, precio, costo, stock, minimo] of productos) {
+    const { data: producto, error: errorProducto } = await admin
+      .from("productos")
+      .insert({ empresa_id: empresaId, categoria_id: categorias.find((c) => c.nombre === categoria).id, nombre, unidad, precio_venta: precio, stock_minimo: minimo })
+      .select("id")
+      .single();
+    if (errorProducto) throw errorProducto;
+    await admin.from("movimientos_stock").insert({
+      empresa_id: empresaId,
+      producto_id: producto.id,
+      tipo: "ajuste",
+      motivo: "stock_inicial",
+      cantidad: stock,
+      costo_unitario: costo,
+    });
+  }
+}
+
+async function prepararFase2() {
+  const admin = clienteAdminLocal();
+  await negocioDePrueba(admin, ROSA, PRODUCTOS_ROSA);
+  await negocioDePrueba(admin, NUEVO);
+}
+
+async function irAProducto(pagina, nombre) {
+  await pagina.goto(URL_APP + "/mi-stock/productos");
+  await pagina.getByRole("link", { name: new RegExp(nombre) }).first().click();
+  await pagina.waitForURL("**/mi-stock/productos/*");
+}
+
+async function llenarProductoPaso1(pagina) {
+  await pagina.getByLabel("Nombre").fill("Galletas de vainilla 120 g");
+  await pagina.getByLabel("Categoría").selectOption({ label: "🍫 Snacks y dulces" });
+  await pagina.getByRole("button", { name: "Seguir" }).click();
+  await pagina.getByRole("heading", { name: "Precios" }).waitFor();
+}
+
+async function llenarProductoPaso2(pagina) {
+  await pagina.getByLabel(/¿A cuánto lo vendes\?/).fill("790");
+  await pagina.getByLabel(/¿Cuánto te costó\?/).fill("480");
+  await pagina.getByRole("button", { name: "Seguir" }).click();
+  await pagina.getByRole("heading", { name: "¿Cuánto tienes?" }).waitFor();
+}
+
+async function contarPanaderia(pagina) {
+  await pagina.goto(URL_APP + "/mi-stock/conteo");
+  await pagina.getByRole("link", { name: /Panadería/ }).click();
+  await pagina.getByLabel(/¿Cuántos hay\?/).fill("10");
+  await pagina.getByRole("button", { name: /Siguiente|Terminar/ }).click();
+  await pagina.getByRole("button", { name: /Hay lo mismo/ }).click();
+  await pagina.getByRole("heading", { name: /diferencia|cuadra/ }).waitFor();
+}
+
 const escaparHtml = (texto) =>
   String(texto).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
 
@@ -327,6 +693,9 @@ async function capturar(navegador, carpeta, pantalla, tamano, sufijo, escala) {
     await pagina.waitForTimeout(300);
   }
   await pagina.evaluate(() => document.fonts.ready);
+  // En una captura de página completa, la barra fija de ayuda quedaría a media página:
+  // se muestra al final, como la ve la persona al llegar abajo.
+  await pagina.addStyleTag({ content: "[data-fijo-abajo]{position:static!important}" });
   const archivo = `${pantalla.archivo}${sufijo}.png`;
   await pagina.screenshot({ path: path.join(carpeta, archivo), fullPage: true });
   await contexto.close();

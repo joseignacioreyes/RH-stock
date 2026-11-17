@@ -78,6 +78,64 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"movimientos_stock": {
+                  Row: {
+                    "cantidad": number,"costo_unitario": number | null,"created_at": string,"empresa_id": string,"fecha": string,"id": string,"motivo": string | null,"producto_id": string,"referencia_id": string | null,"tipo": string,"updated_at": string,"usuario_id": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "cantidad": number,"costo_unitario"?: number | null,"created_at"?: string,"empresa_id": string,"fecha"?: string,"id"?: string,"motivo"?: string | null,"producto_id": string,"referencia_id"?: string | null,"tipo": string,"updated_at"?: string,"usuario_id"?: string | null
+                  }
+                  Update: {
+                    "cantidad"?: number,"costo_unitario"?: number | null,"created_at"?: string,"empresa_id"?: string,"fecha"?: string,"id"?: string,"motivo"?: string | null,"producto_id"?: string,"referencia_id"?: string | null,"tipo"?: string,"updated_at"?: string,"usuario_id"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "movimientos_stock_empresa_id_fkey"
+      columns: ["empresa_id"]
+isOneToOne: false
+      referencedRelation: "empresas"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "movimientos_stock_producto_id_fkey"
+      columns: ["producto_id"]
+isOneToOne: false
+      referencedRelation: "productos"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "movimientos_stock_usuario_id_fkey"
+      columns: ["usuario_id"]
+isOneToOne: false
+      referencedRelation: "usuarios"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"productos": {
+                  Row: {
+                    "activo": boolean,"categoria_id": string | null,"codigo_barras": string | null,"costo_promedio": number,"created_at": string,"empresa_id": string,"id": string,"nombre": string,"precio_venta": number,"stock_actual": number,"stock_minimo": number,"ultimo_movimiento_en": string | null,"unidad": string,"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "activo"?: boolean,"categoria_id"?: string | null,"codigo_barras"?: string | null,"costo_promedio"?: number,"created_at"?: string,"empresa_id": string,"id"?: string,"nombre": string,"precio_venta"?: number,"stock_actual"?: number,"stock_minimo"?: number,"ultimo_movimiento_en"?: string | null,"unidad"?: string,"updated_at"?: string
+                  }
+                  Update: {
+                    "activo"?: boolean,"categoria_id"?: string | null,"codigo_barras"?: string | null,"costo_promedio"?: number,"created_at"?: string,"empresa_id"?: string,"id"?: string,"nombre"?: string,"precio_venta"?: number,"stock_actual"?: number,"stock_minimo"?: number,"ultimo_movimiento_en"?: string | null,"unidad"?: string,"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "productos_categoria_id_fkey"
+      columns: ["categoria_id"]
+isOneToOne: false
+      referencedRelation: "categorias"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "productos_empresa_id_fkey"
+      columns: ["empresa_id"]
+isOneToOne: false
+      referencedRelation: "empresas"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"usuarios": {
                   Row: {
                     "correo": string,"created_at": string,"empresa_id": string | null,"id": string,"nombre": string,"rol": string,"rut": string,"updated_at": string
@@ -124,8 +182,19 @@ isOneToOne: false
             [_ in never]: never
           }
           Functions: {
-            "crear_categorias_base":
+            "costo_promedio_ponderado":
+{ Args: { "p_cantidad": number,"p_costo_anterior": number,"p_costo_nuevo": number,"p_stock_anterior": number }; Returns: number
+                           },
+"costos_de_mi_negocio":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "costo_promedio": number,"producto_id": string
+            }[]
+                           },
+"crear_categorias_base":
 { Args: { "p_empresa_id": string }; Returns: undefined
+                           },
+"crear_producto":
+{ Args: { "p_categoria_id": string,"p_codigo_barras": string,"p_costo": number,"p_nombre": string,"p_precio_venta": number,"p_stock_inicial": number,"p_stock_minimo": number,"p_unidad": string }; Returns: string
                            },
 "crear_vendedor":
 { Args: { "p_empresa_id": string,"p_nombre": string,"p_pin": string }; Returns: string
@@ -142,8 +211,14 @@ isOneToOne: false
 "puedo_modificar":
 { Args: { "p_empresa_id": string }; Returns: boolean
                            },
+"registrar_conteo":
+{ Args: { "p_conteos": Json }; Returns: number
+                           },
 "registrar_negocio":
 { Args: { "p_comuna": string,"p_correo": string,"p_ip": string,"p_nombre": string,"p_nombre_negocio": string,"p_rut_empresa": string,"p_rut_usuario": string,"p_usuario_id": string,"p_version_legal": string }; Returns: string
+                           },
+"registrar_salida":
+{ Args: { "p_cantidad": number,"p_motivo": string,"p_producto_id": string }; Returns: undefined
                            }
           }
           Enums: {
