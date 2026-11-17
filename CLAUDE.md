@@ -1,6 +1,6 @@
 # Prompt para construir "RH Stock": app web de inventario para almacenes de barrio
 
-> Cómo usarlo: pega este archivo completo como instrucciones del proyecto (o guárdalo como `CLAUDE.md` en la carpeta del código si usas Claude Code). Luego pide: "Empieza por la Fase 0".
+> Este archivo es la guía del proyecto RH Stock. Para empezar, pide: "Empieza por la Fase 0".
 
 **Marca:** RH Stock (de Reyes Herrera). Eslogan: "Tu inventario con una foto". Dominio previsto: rhstock.cl. Como "RH" en Chile se asocia a Recursos Humanos, el logo, los textos y la portada deben dejar claro desde el primer vistazo que es una app de inventario para almacenes.
 
@@ -195,6 +195,9 @@ La Ley 21.719 de protección de datos personales rige desde el 1 de diciembre de
 
 - Pruebas automáticas como mínimo para: sincronización de ventas sin internet (sin duplicados), validación de RUT, cálculo del costo promedio ponderado, cálculo del stock, recomendación de precio, RLS (un usuario de la empresa A no puede leer ni escribir datos de la empresa B) y el parser del JSON de la IA.
 - Datos de ejemplo: ver la sección 8b (perfil de ejemplo).
+- Mensajes de error en español y amables. Nunca mostrar errores técnicos al usuario final.
+- La app debe funcionar bien en un celular Android de gama baja y con conexión lenta (imágenes comprimidas antes de subirlas, máximo ~1.500 px por lado).
+- Un `README.md` con cómo instalar, configurar las variables, desplegar en Vercel y crear el primer administrador.
 
 ## 8b. Perfil de ejemplo (créalo en la Fase 1 y complétalo en cada fase)
 
@@ -244,9 +247,6 @@ Crea un **negocio ficticio completo** para probar, para las capturas de cada fas
 - Pagos de la suscripción: el mes anterior confirmado y el actual "informado" con comprobante de ejemplo, para que el administrador lo confirme.
 
 **Botón "Probar sin registrarse" en la portada:** entra al Almacén Don Pepe en **modo demo**. El demo es de solo lectura o se reinicia solo cada noche, para que nadie lo deje desordenado. Muestra una franja arriba: "Estás viendo un negocio de ejemplo. [Crear mi cuenta]". Sirve para que José muestre la app a los clientes en una visita.
-- Mensajes de error en español y amables. Nunca mostrar errores técnicos al usuario final.
-- La app debe funcionar bien en un celular Android de gama baja y con conexión lenta (imágenes comprimidas antes de subirlas, máximo ~1.500 px por lado).
-- Un `README.md` con cómo instalar, configurar las variables, desplegar en Vercel y crear el primer administrador.
 
 ## 9. Plan de trabajo por fases
 
